@@ -70,6 +70,14 @@
         }
     });
 
+    app.getEnabledServers = function() {
+        if (currentServer < 0) {
+            return servers;
+        } else {
+            return [servers[currentServer]];
+        }
+    }
+
     app.switchServerView = function(server) {
         var href, newhref;
 
@@ -256,6 +264,7 @@
     }
 
     app.getRequestPlotData = function() {
+        var servers = app.getEnabledServers();
         var data = [];
 
         for (var i = 0; i < servers.length; i++) {
@@ -276,6 +285,7 @@
     }
 
     app.getBandwidthPlotData = function() {
+        var servers = app.getEnabledServers();
         var data = [];
 
         for (var i = 0; i < servers.length; i++) {
@@ -306,6 +316,7 @@
     }
 
     app.updateDashboardStats = function() {
+        var servers = app.getEnabledServers();
         var stats = false;
 
         for (var i = 0; i < servers.length; i++) {
@@ -516,9 +527,16 @@
     }
 
     if (hasConfig) {
+        if (app.getEnabledServers().length <= 1) {
+            var legendOptions = { show: false };
+        } else {
+            var legendOptions = { show: true };
+        }
+
         var datar = [];
         var datab = [];
         var roptions = {
+            legend: legendOptions,
             series: {
                 stack: true,
                 lines: { fill: true },
@@ -532,6 +550,7 @@
             }
         };
         var boptions = {
+            legend: legendOptions,
             series: {
                 stack: true,
                 lines: { fill: true },
