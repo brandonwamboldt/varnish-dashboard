@@ -454,13 +454,39 @@
     }
 
     app.updateServerStats = function() {
+        var servers = app.getEnabledServers();
+        var stats = [];
+
+        for (var i = 0; i < servers.length; i++) {
+            if (typeof stats.timestamp === 'undefined') {
+                for (var j in servers[i].current_stats) {
+                    if (j == 'timestamp') {
+                        stats[j] = { value: servers[i].current_stats[j], description: 'Current server time' };
+                    } else {
+                        stats[j] = servers[i].current_stats[j];
+                    }
+                }
+            } else {
+                for (var j in servers[i].current_stats) {
+                    if (j == 'timestamp') {
+                        continue;
+                    }
+
+                    stats[j].value = stats[j].value + servers[i].current_stats[j].value;
+                }
+            }
+        }
+
         $('#server-stats tbody').html('');
 
+        for (var stat in stats) {
+            var stati = stats[stat];
 
-        for (var stat in server.current_stats) {
-            var stati = server.current_stats[stat];
+            if (stati.value.toString().match(/^[0-9]+$/)) {
+                stati.value = stati.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
 
-            $('#server-stats tbody').append('<tr><td>' + stat + '</td><td></td><td></td></tr>');
+            $('#server-stats tbody').append('<tr><td><code>' + stat + '</code></td><td>' + stati.value + '</td><td>' + stati.description + '</td></tr>');
         }
     }
 
