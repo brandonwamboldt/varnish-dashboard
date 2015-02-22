@@ -29,6 +29,8 @@
         servers[k].status_text = '';
         servers[k].last_stats = false;
         servers[k].current_stats = false;
+
+        $('#server-navigation ul').append('<li role="presentation"><a role="menuitem" class="switch-server" data-server="' + k + '" href="?server=' + k + '">' + servers[k].name + '</a></li>');
     }
 
     $(document).ready(function() {
@@ -47,12 +49,43 @@
             $('#server-navigation').show();
         }
 
+        $('#server-navigation .switch-server').on('click', function(e) {
+            e.preventDefault();
+            app.switchServerView($(this).data('server'));
+        });
+
         for (idx in servers) {
             app.getServerStats(idx);
             app.getServerStatus(idx);
             app.renderDashboardServerPanel(idx);
         }
     });
+
+    app.switchServerView = function(server) {
+        var href, newhref;
+
+        href = window.location.href;
+        search = window.location.search;
+
+        if (server === '') {
+            if (search.indexOf('server=') >= 0) {
+                newhref = href.replace(/&?server=[0-9]+/, '');
+                newhref = newhref.replace(/\?$/, '');
+            }
+        } else {
+            if (href.indexOf('?') === -1) {
+                newhref = href + '?server=' + server;
+            } else if (search.indexOf('server=') >= 0) {
+                newhref = href.replace(/server=[0-9]+/, 'server=' + server);
+            } else {
+                newhref = href + '&server=' + server;
+            }
+        }
+
+        if (newhref) {
+            window.location = newhref;
+        }
+    }
 
     app.ajax = function(server, options) {
         options.url = '//' + server.host + ':' + server.port + options.url;
