@@ -1,0 +1,36 @@
+/* hey */
+
+.navbar > .container .navbar-brand {
+	padding: 2px;
+}
+
+.navbar-brand img {
+	height: 46px;
+}
+
+.site-footer {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    margin-top: 60px;
+    color: #767676;
+    text-align: center;
+    border-top: 1px solid #E5E5E5;
+}
+
+.site-footer p {
+    margin-bottom: 0px;
+}
+
+.site-footer-links {
+    padding-left: 0px;
+    margin-top: 20px;
+}
+
+.site-footer-links li:first-child  {
+    padding-left: 0px;
+}
+
+.site-footer-links li {
+    display: inline;
+    padding: 0px 2px;
+}
