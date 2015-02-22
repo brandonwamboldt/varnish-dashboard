@@ -23,6 +23,7 @@
     var hasConfig = typeof config !== 'undefined';
     var isCombinedView = servers.length > 1;
     var currentServer = -1;
+    var page = $('body').data('page');
 
     if (servers.length > 1) {
         if (window.location.search.match(/server=([0-9]+)/)) {
@@ -63,12 +64,67 @@
             app.switchServerView($(this).data('server'));
         });
 
+        if (page === 'dashboard') {
+            app.initDashboard();
+        }
+    });
+
+    app.initDashboard = function() {
+        if (app.getEnabledServers().length <= 1) {
+            var legendOptions = { show: false };
+        } else {
+            var legendOptions = { show: true };
+        }
+
+        var datar = [];
+        var datab = [];
+        var roptions = {
+            legend: legendOptions,
+            series: {
+                stack: true,
+                lines: { fill: true },
+                shadowSize: 0
+            },
+            xaxis: {
+                show: false
+            },
+            yaxis: {
+                min: 0
+            }
+        };
+        var boptions = {
+            legend: legendOptions,
+            series: {
+                stack: true,
+                lines: { fill: true },
+                shadowSize: 0
+            },
+            xaxis: {
+                show: false
+            },
+            yaxis: {
+                tickFormatter: app.bytesToNiceUnits,
+                min: 0,
+                minTickSize: 125
+            }
+        };
+
+        for (var i = 0; i < servers.length; i++) {
+            datar[i] = {label: servers[i].name, data: []};
+            datab[i] = {label: servers[i].name, data: []};
+            requestData[i] = [];
+            bandwidthData[i] = [];
+        }
+
+        requestPlot = $("#varnish-requests-graph").plot(datar, roptions).data("plot");
+        bandwidthPlot = $("#varnish-bandwidth-graph").plot(datab, boptions).data("plot");
+
         for (idx in servers) {
             app.getServerStats(idx);
             app.getServerStatus(idx);
             app.renderDashboardServerPanel(idx);
         }
-    });
+    }
 
     app.getEnabledServers = function() {
         if (currentServer < 0) {
@@ -524,57 +580,6 @@
         } else {
             return (bytes / 125).toFixed(1) + ' Kbps';
         }
-    }
-
-    if (hasConfig) {
-        if (app.getEnabledServers().length <= 1) {
-            var legendOptions = { show: false };
-        } else {
-            var legendOptions = { show: true };
-        }
-
-        var datar = [];
-        var datab = [];
-        var roptions = {
-            legend: legendOptions,
-            series: {
-                stack: true,
-                lines: { fill: true },
-                shadowSize: 0
-            },
-            xaxis: {
-                show: false
-            },
-            yaxis: {
-                min: 0
-            }
-        };
-        var boptions = {
-            legend: legendOptions,
-            series: {
-                stack: true,
-                lines: { fill: true },
-                shadowSize: 0
-            },
-            xaxis: {
-                show: false
-            },
-            yaxis: {
-                tickFormatter: app.bytesToNiceUnits,
-                min: 0,
-                minTickSize: 125
-            }
-        };
-
-        for (var i = 0; i < servers.length; i++) {
-            datar[i] = {label: servers[i].name, data: []};
-            datab[i] = {label: servers[i].name, data: []};
-            requestData[i] = [];
-            bandwidthData[i] = [];
-        }
-
-        requestPlot = $("#varnish-requests-graph").plot(datar, roptions).data("plot");
-        bandwidthPlot = $("#varnish-bandwidth-graph").plot(datab, boptions).data("plot");
     }
 
     $('abbr').tooltip()
