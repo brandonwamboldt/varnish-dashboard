@@ -22,6 +22,15 @@
     var servers = config.servers;
     var hasConfig = typeof config !== 'undefined';
     var isCombinedView = servers.length > 1;
+    var currentServer = -1;
+
+    if (servers.length > 1) {
+        if (window.location.search.match(/server=([0-9]+)/)) {
+            currentServer = window.location.search.match(/server=([0-9]+)/)[1];
+            isCombinedView = false;
+            $('#server-navigation button').html(servers[currentServer].name + ' <span class="caret"></span>');
+        }
+    }
 
     // Add state vars to servers
     for (var k = 0; k < servers.length; k++) {
