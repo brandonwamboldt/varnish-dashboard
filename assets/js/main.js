@@ -165,14 +165,14 @@
                 param = params[k];
 
                 var html = '<tr>';
-                html += '<td><code>' + param + '</code></td>';
-                html += '<td><code>' + response[param].value + '</code></td>';
-                html += '<td><code>' + response[param].default + '</code></td>';
+                html += '<td style="font-family:monospace">' + param + '</td>';
+                html += '<td style="font-family:monospace">' + response[param].value + '</td>';
+                html += '<td style="font-family:monospace">' + response[param].default + '</td>';
 
                 if (response[param].unit) {
-                    html += '<td><code>' + response[param].unit + '</code></td>';
+                    html += '<td style="font-family:monospace">' + response[param].unit + '</td>';
                 } else {
-                    html += '<td>-</td>';
+                    html += '<td style="font-family:monospace">-</td>';
                 }
 
                 html += '<td>' + response[param].description + '</td>';
