@@ -31,6 +31,12 @@
             isCombinedView = false;
             $('#server-navigation button').html(servers[currentServer].name + ' <span class="caret"></span>');
         }
+
+        if (currentServer !== -1) {
+            $('.navbar-nav a').each(function () {
+                $(this).attr('href', $(this).attr('href') + '?server=' + currentServer);
+            });
+        }
     }
 
     // Add state vars to servers
