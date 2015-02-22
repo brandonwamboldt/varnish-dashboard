@@ -78,6 +78,12 @@
             app.initDashboard();
         } else if (page === 'stats') {
             app.initStats();
+        } else if (page === 'params') {
+            if (isCombinedView) {
+                $('.page-body').html('<div class="alert alert-danger" role="alert">This page does not work in combined view mode, please select a specific server to view</div>');
+            } else {
+                app.initParams();
+            }
         }
     });
 
@@ -143,6 +149,38 @@
         for (idx in servers) {
             app.getServerStats();
         }
+    }
+
+    app.initParams = function() {
+        app.get(servers[currentServer], '/paramjson/', function(response) {
+            var params = [];
+
+            for (var param in response) {
+                params.push(param);
+            }
+
+            params.sort();
+
+            for (var k in params) {
+                param = params[k];
+
+                var html = '<tr>';
+                html += '<td><code>' + param + '</code></td>';
+                html += '<td><code>' + response[param].value + '</code></td>';
+                html += '<td><code>' + response[param].default + '</code></td>';
+
+                if (response[param].unit) {
+                    html += '<td><code>' + response[param].unit + '</code></td>';
+                } else {
+                    html += '<td>-</td>';
+                }
+
+                html += '<td>' + response[param].description + '</td>';
+                html += '</tr>';
+
+                $('#server-params tbody').append(html);
+            }
+        });
     }
 
     app.getEnabledServers = function() {
