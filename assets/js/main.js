@@ -40,17 +40,21 @@
         servers[k].last_stats = false;
         servers[k].current_stats = false;
 
+        if (!servers[k].host) {
+            servers[k].host = document.location.hostname;
+        }
+
         $('#server-navigation ul').append('<li role="presentation"><a role="menuitem" class="switch-server" data-server="' + k + '" href="?server=' + k + '">' + servers[k].name + '</a></li>');
     }
 
     $(document).ready(function() {
         if (!hasConfig) {
-            $('#dashboard-body').html('<div class="alert alert-danger" role="alert">No config was found, please ensure you have a config.js file</div>');
+            $('.page-body').html('<div class="alert alert-danger" role="alert">No config was found, please ensure you have a config.js file</div>');
             return;
         }
 
         if (isCombinedView) {
-            $('#dashboard-body').prepend('<div class="alert alert-info" role="alert">NOTE: You are in the combined server view, all stats shown are the sum of stats from each server</div>');
+            $('.page-body').prepend('<div class="alert alert-info" role="alert">NOTE: You are in the combined server view, all stats shown are the sum of stats from each server</div>');
         }
 
         if (servers.length === 1) {
@@ -66,6 +70,8 @@
 
         if (page === 'dashboard') {
             app.initDashboard();
+        } else if (page === 'stats') {
+            app.initStats();
         }
     });
 
@@ -76,6 +82,7 @@
             var legendOptions = { show: true };
         }
 
+        var idx = 0;
         var datar = [];
         var datab = [];
         var roptions = {
@@ -120,9 +127,15 @@
         bandwidthPlot = $("#varnish-bandwidth-graph").plot(datab, boptions).data("plot");
 
         for (idx in servers) {
-            app.getServerStats(idx);
+            app.getServerStats();
             app.getServerStatus(idx);
             app.renderDashboardServerPanel(idx);
+        }
+    }
+
+    app.initStats = function() {
+        for (idx in servers) {
+            app.getServerStats();
         }
     }
 
@@ -440,39 +453,64 @@
         }
     }
 
-    app.getServerStats = function(index) {
-        var server = servers[index];
+    app.updateServerStats = function() {
+        $('#server-stats tbody').html('');
 
-        if (server.host === null) {
-            server.host = document.location.hostname;
+
+        for (var stat in server.current_stats) {
+            var stati = server.current_stats[stat];
+
+            $('#server-stats tbody').append('<tr><td>' + stat + '</td><td></td><td></td></tr>');
         }
+    }
 
-        app.get(server, '/stats', function(response) {
-            server.last_stats = server.current_stats;
-            server.current_stats = response;
+    app.getServerStats = function() {
+        var ajaxCount = 0;
 
-            if (requestData[index].length === 0) {
-                var prestartTime = Date.parse(server.current_stats.timestamp) - (config.max_points * config.update_freq);
+        for (idx in servers) {
+            ajaxCount++;
 
-                for (var j = 0; j < config.max_points; j++) {
-                    requestData[index].push([prestartTime + (j * config.update_freq), 0]);
-                }
-            }
+            (function(server, index) {
+                app.get(server, '/stats', function(response) {
+                    ajaxCount--;
+                    server.last_stats = server.current_stats;
+                    server.current_stats = response;
 
-            if (bandwidthData[index].length === 0) {
-                var prestartTime = Date.parse(server.current_stats.timestamp) - (config.max_points * config.update_freq);
+                    if (page === 'dashboard') {
+                        if (requestData[index].length === 0) {
+                            var prestartTime = Date.parse(server.current_stats.timestamp) - (config.max_points * config.update_freq);
 
-                for (var j = 0; j < config.max_points; j++) {
-                    bandwidthData[index].push([prestartTime + (j * config.update_freq), 0]);
-                }
-            }
+                            for (var j = 0; j < config.max_points; j++) {
+                                requestData[index].push([prestartTime + (j * config.update_freq), 0]);
+                            }
+                        }
 
-            app.renderDashboardServerPanel(index);
-            app.updateDashboardGraphs();
-            app.updateDashboardStats();
-        }, 'json');
+                        if (bandwidthData[index].length === 0) {
+                            var prestartTime = Date.parse(server.current_stats.timestamp) - (config.max_points * config.update_freq);
 
-        setTimeout(function() { app.getServerStats(index) }, config.update_freq);
+                            for (var j = 0; j < config.max_points; j++) {
+                                bandwidthData[index].push([prestartTime + (j * config.update_freq), 0]);
+                            }
+                        }
+
+                        app.renderDashboardServerPanel(index);
+
+                        if (ajaxCount === 0) {
+                            app.updateDashboardGraphs();
+                            app.updateDashboardStats();
+                        }
+                    } else if (page === 'stats') {
+                        if (ajaxCount === 0) {
+                            app.updateServerStats();
+                        }
+                    }
+
+                    if (ajaxCount === 0) {
+                        setTimeout(function() { app.getServerStats() }, config.update_freq);
+                    }
+                }, 'json');
+            })(servers[idx], idx);
+        }
     };
 
     app.getServerStatus = function(index) {
