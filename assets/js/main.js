@@ -190,9 +190,10 @@
 
         requestPlot = $("#varnish-requests-graph").plot(datar, roptions).data("plot");
         bandwidthPlot = $("#varnish-bandwidth-graph").plot(datab, boptions).data("plot");
+        app.getServerStats();
+        app.getBackendHealth();
 
         for (idx in servers) {
-            app.getServerStats();
             app.getServerStatus(idx);
             app.renderDashboardServerPanel(idx);
         }
@@ -699,6 +700,71 @@
 
             $('#server-stats tbody').append('<tr><td><code>' + stat + '</code></td><td>' + stati.value + '</td><td>' + stati.description + '</td></tr>');
         }
+    }
+
+    app.getBackendHealth = function() {
+        app.multiPost(app.getEnabledServers(), '/direct', 'backend.list', function(responses) {
+            var gbackends = {};
+
+            for (var i = 0; i < responses.length; i++) {
+                var backends = responses[i].split("\n");
+                backends.shift();
+
+                for (var j = 0; j < backends.length; j++) {
+                    var backend = backends[j].split(/\s\s\s+/);
+                    var name = backend[0].match(/(.*?)\((.*?)\)/);
+
+                    gbackends[name[2]] = {
+                        name: name[1],
+                        config: name[2],
+                        refs: backend[1],
+                        admin: backend[2],
+                        probe: backend[3]
+                    };
+                }
+            }
+
+            $('#dashboard-server-info .server-backends').remove();
+
+            var html;
+            html  = '<div class="panel panel-default server-backends">';
+            html += '  <div class="panel-heading">';
+            html += '      Varnish Backends';
+            html += '  </div>';
+            html += '  <div class="panel-body">';
+            html += '    <table class="table table-hover">';
+            html += '      <thead>';
+            html += '        <tr>';
+            html += '          <th style="width:20px"><img src="assets/images/status-online.png" alt=""></th>';
+            html += '          <th>Name</th>';
+            html += '          <th>Config</th>';
+            html += '        </tr>';
+            html += '      </thead>';
+            html += '      <tbody>';
+
+            for (var idx in gbackends) {
+                html += '<tr>';
+
+                if (gbackends[idx].probe.match(/^Healthy/i)) {
+                    html += '<td><img src="assets/images/status-online.png" alt=""></td>';
+                } else {
+                    html += '<td><img src="assets/images/status-busy.png" alt=""></td>';
+                }
+
+                html += '<td>' + gbackends[idx].name + '</td>';
+                html += '<td>' + idx + '</td>';
+                html += '</tr>';
+            }
+
+            html += '      </tbody>';
+            html += '    </table>';
+            html += '  </div>';
+            html += '</div>';
+
+            $('#dashboard-server-info').append(html);
+
+            setTimeout(app.getBackendHealth, config.update_freq);
+        }, 'text')
     }
 
     app.getServerStats = function() {
