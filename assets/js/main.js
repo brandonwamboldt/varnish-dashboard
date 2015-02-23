@@ -357,6 +357,7 @@
 
     app.ajax = function(server, options) {
         options.url = '//' + server.host + ':' + server.port + options.url;
+        options.error = function(xhr) { options.success(xhr.responseText); };
         options.beforeSend = function(xhr) {
             if (server.user && server.pass) {
                 xhr.setRequestHeader("Authorization", btoa(server.user + ":" + server.pass));
