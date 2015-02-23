@@ -1,5 +1,9 @@
 /* hey */
 
+body {
+    padding-top: 80px;
+}
+
 .navbar > .container .navbar-brand {
 	padding: 2px;
 }
