@@ -22,7 +22,7 @@
     var servers = config.servers;
     var hasConfig = typeof config !== 'undefined';
     var isCombinedView = servers.length > 1;
-    var currentServer = -1;
+    var currentServer = isCombinedView ? -1 : 0;
     var page = $('body').data('page');
 
     if (servers.length > 1) {
@@ -383,7 +383,7 @@
         options.error = function(xhr) { options.success(xhr.responseText); };
         options.beforeSend = function(xhr) {
             if (server.user && server.pass) {
-                xhr.setRequestHeader("Authorization", btoa(server.user + ":" + server.pass));
+                xhr.setRequestHeader("Authorization", "Basic " + btoa(server.user + ":" + server.pass));
             }
 
             if (xhr.overrideMimeType) {
@@ -778,10 +778,10 @@
                 backends.shift();
 
                 for (var j = 0; j < backends.length; j++) {
-                    var backend = backends[j].split(/\s\s\s+/);
+                    var backend = backends[j].split(/\s+/);
                     var name = backend[0].match(/(.*?)\((.*?)\)/);
 
-                    gbackends[name[2]] = {
+                    gbackends[name[1]] = {
                         name: name[1],
                         config: name[2],
                         refs: backend[1],
@@ -819,7 +819,7 @@
                 }
 
                 html += '<td>' + gbackends[idx].name + '</td>';
-                html += '<td>' + idx + '</td>';
+                html += '<td>' + gbackends[idx].config + '</td>';
                 html += '</tr>';
             }
 
