@@ -84,6 +84,59 @@
             } else {
                 app.initParams();
             }
+        } else if (page === 'manage') {
+            $('.action-ping').on('click', function(e) {
+                e.preventDefault();
+
+                if (currentServer === -1) {
+                    app.multiGet(servers, '/ping', function(responses) {
+                        var msg = '';
+
+                        for (var idx in responses) {
+                            msg += servers[idx].name + ': ' + responses[idx] + "\n";
+                        }
+
+                        alert(msg);
+                    }, 'text');
+                } else {
+                    app.get(servers[currentServer], '/ping', function(response) {
+                        alert(response);
+                    }, "text");
+                }
+            });
+
+            $('.action-restart').on('click', function(e) {
+                e.preventDefault();
+
+                if (confirm('Are you sure you want to restart Varnish?')) {
+                    app.multiPost(app.getEnabledServers(), '/stop', function(responses) {
+                        app.multiPost(app.getEnabledServers(), '/start', function(responses) {
+                            app.getBanList();
+                            alert('Varnish has been restarted');
+                        }, 'text');
+                    }, 'text');
+                }
+            });
+
+            $('#server-ban').on('submit', function(e) {
+                e.preventDefault();
+
+                app.multiPost(app.getEnabledServers(), '/ban', 'req.url ~ ' + $('#server-ban input').val(), function(responses) {
+                    app.getBanList();
+                    $('#server-ban input').val('');
+                }, 'text');
+            });
+
+            $('#server-ban2').on('submit', function(e) {
+                e.preventDefault();
+
+                app.multiPost(app.getEnabledServers(), '/ban', $('#server-ban2 input').val(), function(responses) {
+                    app.getBanList();
+                    $('#server-ban2 input').val('');
+                }, 'text');
+            });
+
+            app.getBanList();
         }
     });
 
@@ -183,6 +236,43 @@
         });
     }
 
+    app.getBanList = function() {
+        var servers = app.getEnabledServers();
+
+        app.multiGet(servers, '/ban', function(responses) {
+            var banList = {};
+            var banListKeys = [];
+
+            for (var i = 0; i < responses.length; i++) {
+                var response = responses[i].split("\n");
+                response.shift(response);
+
+                for (var j = 0; j < response.length; j++) {
+                    if (response[j] === '') {
+                        continue;
+                    }
+
+                    var ban = response[j].match(/^([0-9\.]+)\s+([0-9]+)\s+(.*)/);
+                    banList[ban[1]] = { timestamp: parseFloat(ban[1]), refs: parseInt(ban[2]), ban: ban[3] };
+                    banListKeys.push(ban[1]);
+                }
+            }
+
+            banListKeys.sort();
+            $('#server-bans tbody').html('');
+
+            for (var i = 0; i < banListKeys.length; i++) {
+                var ban = banList[banListKeys[i]];
+
+                $('#server-bans tbody').append('<tr><td>' + ban.timestamp + '</td><td>' + ban.refs + '</td><td>' + ban.ban + '</td></tr>');
+            }
+
+            if (banListKeys.length === 0) {
+                $('#server-bans tbody').append('<tr><td colspan="3">Nothing in the ban list</td></tr>');
+            }
+        }, 'text');
+    }
+
     app.getEnabledServers = function() {
         if (currentServer < 0) {
             return servers;
@@ -196,6 +286,10 @@
 
         href = window.location.href;
         search = window.location.search;
+
+        if (href.indexOf('#') >= 0) {
+            href = href.replace(/#.*/, '');
+        }
 
         if (server === '') {
             if (search.indexOf('server=') >= 0) {
@@ -248,6 +342,79 @@
             success: success,
             dataType: dataType
         });
+    }
+
+    app.multiGet = function(servers, url, data, success, dataType) {
+        if (typeof data === 'function') {
+            dataType = success;
+            success = data;
+            data = [];
+        }
+
+        if (typeof dataType === 'undefined') {
+            dataType = 'json';
+        }
+
+        var ajaxCount = 0;
+        var responses = [];
+
+        for (var idx in servers) {
+            ajaxCount++;
+
+            (function(idx) {
+                app.ajax(servers[idx], {
+                    url: url,
+                    data: data,
+                    success: function(response) {
+                        ajaxCount--;
+
+                        responses[idx] = response;
+
+                        if (ajaxCount === 0) {
+                            success(responses);
+                        }
+                    },
+                    dataType: dataType
+                });
+            })(idx);
+        }
+    }
+
+    app.multiPost = function(servers, url, data, success, dataType) {
+        if (typeof data === 'function') {
+            dataType = success;
+            success = data;
+            data = [];
+        }
+
+        if (typeof dataType === 'undefined') {
+            dataType = 'json';
+        }
+
+        var ajaxCount = 0;
+        var responses = [];
+
+        for (var idx in servers) {
+            ajaxCount++;
+
+            (function(idx) {
+                app.ajax(servers[idx], {
+                    type: 'POST',
+                    url: url,
+                    data: data,
+                    success: function(response) {
+                        ajaxCount--;
+
+                        responses[idx] = response;
+
+                        if (ajaxCount === 0) {
+                            success(responses);
+                        }
+                    },
+                    dataType: dataType
+                });
+            })(idx);
+        }
     }
 
     app.log = function(msg) {
