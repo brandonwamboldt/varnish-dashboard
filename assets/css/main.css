@@ -4,6 +4,20 @@ body {
     padding-top: 80px;
 }
 
+#vcl-file {
+    background: #2d2d2d;
+    color: #d3d0c8;
+}
+
+#vcl-file .vcl-line-no {
+    padding-right: 10px;
+    color: #807e7a;
+}
+
+#vcl-file .vcl-comment {
+    color: #747369;
+}
+
 .navbar > .container .navbar-brand {
 	padding: 2px;
 }

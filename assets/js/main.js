@@ -95,7 +95,7 @@
 
                     app.get(servers[currentServer], '/vcl/' + active_vcl, function(response) {
                         $('#current-vcl-name').text('VCL: ' + active_vcl + ' (current)');
-                        $('#current-vcl').text(response);
+                        $('#vcl-file').html(app.highlightVcl(response));
                     }, 'text');
                 }, 'text');
 
@@ -182,6 +182,29 @@
             app.getBanList();
         }
     });
+
+    app.highlightVcl = function(vcl) {
+        var lineno = 0;
+        var lines = vcl.match(/\n/g).length;
+        var padding = lines.toString().length;
+
+        // Escape HTML characters
+        vcl = $('<div/>').text(vcl).html();
+
+        // Detect comments
+        vcl = vcl.replace(/^([\t ]*(#|\/\/).*)/mg, '<span class="vcl-comment">$1</span>');
+
+        // Add line numbers
+        vcl = vcl.replace(/(.*)\n/g, function(match, match2) {
+            lineno++;
+
+            var rep = Array(padding + 1 - lineno.toString().length).join(' ') + lineno;
+
+            return '<span class="vcl-line-no">' + rep + '</span><span class="vcl-line">' + match2 + '</span>\n';
+        });
+
+        return vcl;
+    }
 
     app.initDashboard = function() {
         if (app.getEnabledServers().length <= 1) {
