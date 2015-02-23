@@ -84,6 +84,34 @@
             } else {
                 app.initParams();
             }
+        } else if (page === 'vcl') {
+            if (isCombinedView) {
+                $('.page-body').html('<div class="alert alert-danger" role="alert">This page does not work in combined view mode, please select a specific server to view</div>');
+            } else {
+                var active_vcl;
+
+                app.get(servers[currentServer], '/vclactive', function(response) {
+                    active_vcl = response;
+
+                    app.get(servers[currentServer], '/vcl/' + active_vcl, function(response) {
+                        $('#current-vcl-name').text('VCL: ' + active_vcl + ' (current)');
+                        $('#current-vcl').text(response);
+                    }, 'text');
+                }, 'text');
+
+                app.get(servers[currentServer], '/vcljson/', function(response) {
+                    for (var i = 0; i < response.vcls.length; i++) {
+                        var html = '';
+                        html += '<tr>';
+                        html += '<td>' + response.vcls[i].name + '</td>';
+                        html += '<td>' + response.vcls[i].status + '</td>';
+                        html += '<td></td>';
+                        html += '</tr>';
+
+                        $('#server-vcls tbody').append(html)
+                    }
+                }, 'json');
+            }
         } else if (page === 'manage') {
             $('.action-ping').on('click', function(e) {
                 e.preventDefault();
