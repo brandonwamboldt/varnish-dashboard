@@ -146,6 +146,21 @@
                 }
             });
 
+            $('#server-direct').on('submit', function(e) {
+                e.preventDefault();
+
+                app.multiPost(app.getEnabledServers(), '/direct', $('#server-direct input').val(), function(responses) {
+                    var output = '';
+
+                    for (var i = 0; i < responses.length; i++) {
+                        output += servers[i].name + ':<br><br><pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
+                    }
+
+                    $('#cmd-output .modal-body').html(output);
+                    $('#cmd-output').modal('show');
+                }, 'text');
+            });
+
             $('#server-ban').on('submit', function(e) {
                 e.preventDefault();
 

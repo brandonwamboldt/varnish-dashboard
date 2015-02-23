@@ -60,6 +60,13 @@
                 <div class="panel-body">
                   <a class="action-ping btn btn-primary" href="#"><i class="glyphicon glyphicon-comment"></i> Ping Varnish</a>
                   <a class="action-restart btn btn-danger" href="#"><i class="glyphicon glyphicon-refresh"></i> Restart Varnish</a>
+
+                  <br><br><strong>varnishadm command:</strong>
+
+                  <form class="form-inline" style="margin-top:16px;margin-bottom:10px;" id="server-direct">
+                    <input type="text" class="form-control" placeholder="e.g. help" style="width:240px;">
+                    <button type="submit" class="btn btn-primary">Run</button>
+                  </form>
                 </div>
               </div>
 
@@ -134,6 +141,25 @@
         </ul>
       </div>
     </footer>
+
+    <div class="modal fade" id="cmd-output" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Direct Varnish Admin Command Output</h4>
+          </div>
+
+          <div class="modal-body">
+            <pre></pre>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="./config.js"></script>
     <script src="./vendor/jquery-1.11.2.min.js"></script>
