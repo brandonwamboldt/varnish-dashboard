@@ -56,6 +56,57 @@ varnish-agent -H /var/www/html/varnish-dashboard
 
 And visit `http://<varnish_ip>:6085/html/`.
 
+Configuration
+-------------
+
+Configuration is handled via a `config.js` file, which should have this format:
+
+```javascript
+var config = {
+	servers: [{
+		name: "Varnish",
+		host: null,
+		port: 6085,
+		user: false,
+		pass: false
+	}],
+	update_freq: 2000,
+	max_points: 100
+};
+```
+
+### servers
+
+Servers is an array of objects to configure Varnish Agent backends. Eventually we'll support multiple backend servers (see known issues).
+
+**name:**
+
+Used purely for display purposes, name it whatever you want.
+
+**host:**
+
+The hostname/domain/ip of the varnish agent instance. Leave `null` to use whatever host is ued to access the dashboard (which is the most common use case).
+
+**port:**
+
+The varnish agent port. `6085` is the default port.
+
+**user:**
+
+The varnish agent username. If you are using the same host for the dashboard and the varnish agent (e.g. running the agent with the `-H` flag) this is not required and can be left as `false`. Otherwise it IS required.
+
+**pass:**
+
+The varnish agent password. If you are using the same host for the dashboard and the varnish agent (e.g. running the agent with the `-H` flag) this is not required and can be left as `false`. Otherwise it IS required.
+
+### update_freq
+
+The frequency of updates for stats & status information, in milliseconds. The default value, `2000` is 2 seconds.
+
+### max_points
+
+The maximum number of data points to render on the bandwidth/requests per second graphs on the dashboard. Higher numbers are slower to render, but result in a more detailed graph.
+
 Known Issues
 ------------
 
