@@ -71,7 +71,13 @@ var config = {
 		pass: false
 	}],
 	update_freq: 2000,
-	max_points: 100
+	max_points: 100,
+	show_manage_server_page: true,
+	show_vcl_page: true,
+	show_stats_page: true,
+	show_params_page: true,
+	show_logs_page: true,
+	show_restart_varnish_btn: true
 };
 ```
 
@@ -108,6 +114,42 @@ The frequency of updates for stats & status information, in milliseconds. The de
 ### max_points
 
 The maximum number of data points to render on the bandwidth/requests per second graphs on the dashboard. Higher numbers are slower to render, but result in a more detailed graph.
+
+### show_manage_server_page
+
+Whether or not to display the "Manage Server" page in the nav.
+
+Users can still figure out how to hit appropriate Varnish Admin endpoints directly, so don't use this as a security feature. Think of it as a way to prevent users from accidentally breaking stuff.
+
+### show_vcl_page
+
+Whether or not to display the "VCL" page in the nav.
+
+Users can still figure out how to hit appropriate Varnish Admin endpoints directly, so don't use this as a security feature. Think of it as a way to prevent users from accidentally breaking stuff.
+
+### show_stats_page
+
+Whether or not to display the "Stats" page in the nav.
+
+Users can still figure out how to hit appropriate Varnish Admin endpoints directly, so don't use this as a security feature. Think of it as a way to prevent users from accidentally breaking stuff.
+
+### show_params_page
+
+Whether or not to display the "Params" page in the nav.
+
+Users can still figure out how to hit appropriate Varnish Admin endpoints directly, so don't use this as a security feature. Think of it as a way to prevent users from accidentally breaking stuff.
+
+### show_logs_page
+
+Whether or not to display the "Logs" page in the nav.
+
+Users can still figure out how to hit appropriate Varnish Admin endpoints directly, so don't use this as a security feature. Think of it as a way to prevent users from accidentally breaking stuff.
+
+### show_restart_varnish_btn
+
+Whether or not to display the "Restart Varnish" button on the Manage Server page.
+
+Users can still figure out how to hit appropriate Varnish Admin endpoints directly, so don't use this as a security feature. Think of it as a way to prevent users from accidentally breaking stuff.
 
 Known Issues
 ------------
