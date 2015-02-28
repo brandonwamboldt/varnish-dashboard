@@ -13,7 +13,13 @@
                     pass: false
                 }],
                 update_freq: 2000,
-                max_points: 100
+                max_points: 100,
+                show_manage_server_page: true,
+                show_vcl_page: true,
+                show_stats_page: true,
+                show_params_page: true,
+                show_logs_page: true,
+                show_restart_varnish_btn: true
             };
         }
     }
@@ -73,6 +79,30 @@
             e.preventDefault();
             app.switchServerView($(this).data('server'));
         });
+
+        if (!config.show_manage_server_page) {
+            $('.nav a[href="./manage.html"]').hide();
+        }
+
+        if (!config.show_vcl_page) {
+            $('.nav a[href="./vcl.html"]').hide();
+        }
+
+        if (!config.show_stats_page) {
+            $('.nav a[href="./stats.html"]').hide();
+        }
+
+        if (!config.show_params_page) {
+            $('.nav a[href="./params.html"]').hide();
+        }
+
+        if (!config.show_logs_page) {
+            $('.nav a[href="./logs.html"]').hide();
+        }
+
+        if (!config.show_restart_varnish_btn) {
+            $('.action-restart.btn').hide();
+        }
 
         if (page === 'dashboard') {
             app.initDashboard();

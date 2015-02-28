@@ -7,5 +7,11 @@ var config = {
 		pass: "varnish_agent_pass"
 	}],
 	update_freq: 2000,
-	max_points: 100
+	max_points: 100,
+	show_manage_server_page: true,
+	show_vcl_page: true,
+	show_stats_page: true,
+	show_params_page: true,
+	show_logs_page: true,
+	show_restart_varnish_btn: true
 };
