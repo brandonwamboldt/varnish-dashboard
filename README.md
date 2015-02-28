@@ -75,6 +75,8 @@ var config = {
 };
 ```
 
+Important note, this is JavaScript, so make sure you don't have a trailing `,` after your last item or it will break.
+
 ### servers
 
 Servers is an array of objects to configure Varnish Agent backends. Eventually we'll support multiple backend servers (see known issues).
