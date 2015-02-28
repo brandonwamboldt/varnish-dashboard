@@ -56,3 +56,7 @@ varnish-agent -H /var/www/html/varnish-dashboard
 
 And visit `http://<varnish_ip>:6085/html/`.
 
+Known Issues
+------------
+
+Due to cross site origin limitations, the dashboard will only work if it's on the same subdomain as varnish agent (preventing the usage of multiple servers). I've submitted a [patch to Varnish Agent](https://github.com/varnish/vagent2/pull/129) to fix this, but until it's merged, only one varnish backend is supported.
