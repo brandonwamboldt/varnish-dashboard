@@ -43,10 +43,16 @@
         });
 
         for (var server in app.getEnabledServers()) {
-            var html = '<strong>' + app.getServer(server).name + ':</strong> ';
-            html += '<a href="#" data-server="' + server + '" class="clear-panic btn btn-xs btn-success" style="display:none">Clear Panic</a> ';
-            html += '<a href="#" data-server="' + server + '" class="induce-panic btn btn-xs btn-danger">Induce Panic</a><br><br>';
+            var html = '<div class="panel panel-default">';
+            html += '<div class="panel-heading">';
+            html += 'Panic Log (' + app.getServer(server).name + ')';
+            html += '<a href="#" data-server="' + server + '" class="pull-right induce-panic btn btn-xs btn-danger" style="margin-left:6px;">Induce Panic</a>';
+            html += '<a href="#" data-server="' + server + '" class="pull-right clear-panic btn btn-xs btn-success" style="display:none">Clear Panic</a> ';
+            html += '</div>';
+            html += '<div class="panel-body">';
             html += '<pre id="panic-log-' + server + '">Loading...</pre>';
+            html += '</div>';
+            html += '</div>';
 
             $('#last-panic').append(html);
         }
