@@ -1,0 +1,90 @@
+(function(app) {
+    $(document).ready(function() {
+        $('.action-ping').on('click', function(e) {
+            e.preventDefault();
+
+            app.multiGet(app.getEnabledServers(), '/ping', function(responses) {
+                var msg = '';
+
+                for (var idx in responses) {
+                    msg += app.getServer(idx).name + ': ' + responses[idx] + "\n";
+                }
+
+                alert(msg);
+            }, 'text');
+        });
+
+        $('.action-restart').on('click', function(e) {
+            e.preventDefault();
+
+            if (confirm('Are you sure you want to restart Varnish?')) {
+                app.multiPost(app.getEnabledServers(), '/stop', function(responses) {
+                    app.multiPost(app.getEnabledServers(), '/start', function(responses) {
+                        app.getBanList();
+                        alert('Varnish has been restarted');
+                    }, 'text');
+                }, 'text');
+            }
+        });
+
+        $('#server-direct').on('submit', function(e) {
+            e.preventDefault();
+
+            app.multiPost(app.getEnabledServers(), '/direct', $('#server-direct input').val(), function(responses) {
+                var output = '';
+
+                for (var i = 0; i < responses.length; i++) {
+                    output += servers[i].name + ':<br><br><pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
+                }
+
+                $('#cmd-output .modal-body').html(output);
+                $('#cmd-output').modal('show');
+            }, 'text');
+        });
+
+        for (var server in app.getEnabledServers()) {
+            var html = '<strong>' + app.getServer(server).name + ':</strong> ';
+            html += '<a href="#" data-server="' + server + '" class="clear-panic btn btn-xs btn-success" style="display:none">Clear Panic</a> ';
+            html += '<a href="#" data-server="' + server + '" class="induce-panic btn btn-xs btn-danger">Induce Panic</a><br><br>';
+            html += '<pre id="panic-log-' + server + '">Loading...</pre>';
+
+            $('#last-panic').append(html);
+        }
+
+        $('.clear-panic').on('click', function(e) {
+            e.preventDefault();
+            var server = $(this).data('server');
+
+            app.delete(app.getServer(server), '/panic', function(response) {
+                $('.clear-panic[data-server="' + server + '"]').hide();
+                getServerPanicLogs();
+            });
+        });
+
+        $('.induce-panic').on('click', function(e) {
+            e.preventDefault();
+            var server = $(this).data('server');
+
+            app.post(app.getServer(server), '/direct', 'debug.panic.worker', function(response) {
+                $('.clear-panic[data-server="' + server + '"]').show();
+                getServerPanicLogs();
+            });
+        });
+
+        getServerPanicLogs();
+    });
+
+    function getServerPanicLogs() {
+        app.multiGet(app.getEnabledServers(), '/panic', function(responses) {
+            for (var i in responses) {
+                $('#panic-log-' + i).text(responses[i]);
+
+                if (responses[i] === "Child has not panicked or panic has been cleared") {
+                    $('.clear-panic[data-server="' + i + '"]').hide();
+                } else {
+                    $('.clear-panic[data-server="' + i + '"]').show();
+                }
+            }
+        });
+    }
+})(window.app);

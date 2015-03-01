@@ -29,6 +29,7 @@
             <nav class="collapse navbar-collapse bs-navbar-collapse">
                 <ul class="nav navbar-nav">
                   <li><a href="./">Dashboard</a></li>
+                  <li><a href="./bans.html">Bans</a></li>
                   <li class="active"><a href="./manage.html">Manage Server</a></li>
                   <li><a href="./vcl.html">VCL</a></li>
                   <li><a href="./stats.html">Stats</a></li>
@@ -69,51 +70,12 @@
                   </form>
                 </div>
               </div>
-
-              <div class="panel panel-default">
-                <div class="panel-heading">Bans</div>
-                <div class="panel-body">
-                  <p>
-                    Banning a URL will purge it from the cache. This input takes
-                    a regular expression and will ban any items matching the
-                    expression. <code>/</code> will match all URLs. <code>^/blog</code>
-                    will match any URL starting with /blog.
-                  </p>
-
-                  <strong>ban req.url ~ [input]:</strong>
-
-                  <form class="form-inline" style="margin-top:16px;margin-bottom:10px;" id="server-ban">
-                    <input type="text" class="form-control" placeholder="e.g. /" style="width:240px;">
-                    <button type="submit" class="btn btn-primary">Ban</button>
-                  </form>
-
-                  <strong>ban [input]:</strong>
-
-                  <form class="form-inline" style="margin-top:16px;" id="server-ban2">
-                    <input type="text" class="form-control" placeholder="e.g. req.url ~ /" style="width:240px;">
-                    <button type="submit" class="btn btn-primary">Ban</button>
-                  </form>
-                </div>
-              </div>
             </div>
 
             <div class="col-md-8">
               <div class="panel panel-default">
-                <div class="panel-heading">Current Bans</div>
-                <div class="panel-body">
-                  <table id="server-bans" class="table table-bordered table-hover">
-                      <thead>
-                          <tr>
-                              <th style="width:160px;">Timestamp</th>
-                              <th style="width:120px;">References</th>
-                              <th>Ban</th>
-                          </tr>
-                      </thead>
-
-                      <tbody style="font-family:monospace">
-                        <tr><td colspan="3">Nothing in the ban list</td></tr>
-                      </tbody>
-                  </table>
+                <div class="panel-heading">Panic Log</div>
+                <div class="panel-body" id="last-panic">
                 </div>
               </div>
             </div>
@@ -167,6 +129,7 @@
     <script src="./vendor/flot/jquery.flot.stack.min.js"></script>
     <script src="./vendor/bootstrap-3.3.2-dist/js/bootstrap.min.js"></script>
     <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/manage.js"></script>
 </body>
 
 </html>

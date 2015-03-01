@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Params :: Varnish Dashboard</title>
+    <title>Bans :: Varnish Dashboard</title>
 
     <link rel="shortcut icon" href="./assets/images/favicon.ico">
 
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./assets/css/main.css">
 </head>
 
-<body data-page="params">
+<body data-page="bans">
     <header class="navbar navbar-fixed-top navbar-inverse" id="top">
           <div class="container">
             <div class="navbar-header">
@@ -29,11 +29,11 @@
             <nav class="collapse navbar-collapse bs-navbar-collapse">
                 <ul class="nav navbar-nav">
                   <li><a href="./">Dashboard</a></li>
-                  <li><a href="./bans.html">Bans</a></li>
+                  <li class="active"><a href="./bans.html">Bans</a></li>
                   <li><a href="./manage.html">Manage Server</a></li>
                   <li><a href="./vcl.html">VCL</a></li>
                   <li><a href="./stats.html">Stats</a></li>
-                  <li class="active"><a href="./params.html">Params</a></li>
+                  <li><a href="./params.html">Params</a></li>
                   <li><a href="./logs.html">Logs</a></li>
                 </ul>
 
@@ -53,23 +53,55 @@
         </div>
     </header>
 
-    <div class="container page-body" id="params-body">
+    <div class="container page-body" id="bans-body">
         <div class="row">
-            <div class="col-md-12">
-                <table id="server-params" class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th>Parameter Name</th>
-                            <th>Current Value</th>
-                            <th>Default Value</th>
-                            <th>Type</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
+            <div class="col-md-4">
+              <div class="panel panel-default">
+                <div class="panel-heading">Bans</div>
+                <div class="panel-body">
+                  <p>
+                    Banning a URL will purge it from the cache. This input takes
+                    a regular expression and will ban any items matching the
+                    expression. <code>/</code> will match all URLs. <code>^/blog</code>
+                    will match any URL starting with /blog.
+                  </p>
 
-                    <tbody>
-                    </tbody>
-                </table>
+                  <strong>ban req.url ~ [input]:</strong>
+
+                  <form class="form-inline" style="margin-top:16px;margin-bottom:10px;" id="server-ban">
+                    <input type="text" class="form-control" placeholder="e.g. /" style="width:240px;">
+                    <button type="submit" class="btn btn-primary">Ban</button>
+                  </form>
+
+                  <strong>ban [input]:</strong>
+
+                  <form class="form-inline" style="margin-top:16px;" id="server-ban2">
+                    <input type="text" class="form-control" placeholder="e.g. req.url ~ /" style="width:240px;">
+                    <button type="submit" class="btn btn-primary">Ban</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-8">
+              <div class="panel panel-default">
+                <div class="panel-heading">Current Bans</div>
+                <div class="panel-body">
+                  <table id="server-bans" class="table table-bordered table-hover">
+                      <thead>
+                          <tr>
+                              <th style="width:160px;">Timestamp</th>
+                              <th style="width:120px;">References</th>
+                              <th>Ban</th>
+                          </tr>
+                      </thead>
+
+                      <tbody style="font-family:monospace">
+                        <tr><td colspan="3">Nothing in the ban list</td></tr>
+                      </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
         </div>
     </div>
@@ -95,6 +127,25 @@
         </ul>
       </div>
     </footer>
+
+    <div class="modal fade" id="cmd-output" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Direct Varnish Admin Command Output</h4>
+          </div>
+
+          <div class="modal-body">
+            <pre></pre>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="./config.js"></script>
     <script src="./vendor/jquery-1.11.2.min.js"></script>

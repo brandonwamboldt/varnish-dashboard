@@ -151,55 +151,7 @@
                     }
                 }, 'json');
             }
-        } else if (page === 'manage') {
-            $('.action-ping').on('click', function(e) {
-                e.preventDefault();
-
-                if (currentServer === -1) {
-                    app.multiGet(servers, '/ping', function(responses) {
-                        var msg = '';
-
-                        for (var idx in responses) {
-                            msg += servers[idx].name + ': ' + responses[idx] + "\n";
-                        }
-
-                        alert(msg);
-                    }, 'text');
-                } else {
-                    app.get(servers[currentServer], '/ping', function(response) {
-                        alert(response);
-                    }, "text");
-                }
-            });
-
-            $('.action-restart').on('click', function(e) {
-                e.preventDefault();
-
-                if (confirm('Are you sure you want to restart Varnish?')) {
-                    app.multiPost(app.getEnabledServers(), '/stop', function(responses) {
-                        app.multiPost(app.getEnabledServers(), '/start', function(responses) {
-                            app.getBanList();
-                            alert('Varnish has been restarted');
-                        }, 'text');
-                    }, 'text');
-                }
-            });
-
-            $('#server-direct').on('submit', function(e) {
-                e.preventDefault();
-
-                app.multiPost(app.getEnabledServers(), '/direct', $('#server-direct input').val(), function(responses) {
-                    var output = '';
-
-                    for (var i = 0; i < responses.length; i++) {
-                        output += servers[i].name + ':<br><br><pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
-                    }
-
-                    $('#cmd-output .modal-body').html(output);
-                    $('#cmd-output').modal('show');
-                }, 'text');
-            });
-
+        } else if (page === 'bans') {
             $('#server-ban').on('submit', function(e) {
                 e.preventDefault();
 
@@ -219,6 +171,8 @@
             });
 
             app.getBanList();
+        } else if (page === 'manage') {
+
         }
     });
 
@@ -385,7 +339,19 @@
         } else {
             return [servers[currentServer]];
         }
-    }
+    };
+
+    app.getServers = function(server) {
+        if (server === undefined) {
+            return servers;
+        } else {
+            return servers[server];
+        }
+    };
+
+    app.getServer = function(server) {
+        return servers[server];
+    };
 
     app.switchServerView = function(server) {
         var href, newhref;
@@ -444,6 +410,66 @@
         }
 
         app.ajax(server, {
+            url: url,
+            data: data,
+            success: success,
+            dataType: dataType
+        });
+    }
+
+    app.post = function(server, url, data, success, dataType) {
+        if (typeof data === 'function') {
+            dataType = success;
+            success = data;
+            data = [];
+        }
+
+        if (typeof dataType === 'undefined') {
+            dataType = 'json';
+        }
+
+        app.ajax(server, {
+            type: 'POST',
+            url: url,
+            data: data,
+            success: success,
+            dataType: dataType
+        });
+    }
+
+    app.put = function(server, url, data, success, dataType) {
+        if (typeof data === 'function') {
+            dataType = success;
+            success = data;
+            data = [];
+        }
+
+        if (typeof dataType === 'undefined') {
+            dataType = 'json';
+        }
+
+        app.ajax(server, {
+            type: 'PUT',
+            url: url,
+            data: data,
+            success: success,
+            dataType: dataType
+        });
+    }
+
+    app.delete = function(server, url, data, success, dataType) {
+        if (typeof data === 'function') {
+            dataType = success;
+            success = data;
+            data = [];
+        }
+
+        if (typeof dataType === 'undefined') {
+            dataType = 'json';
+        }
+
+        app.ajax(server, {
+            type: 'DELETE',
             url: url,
             data: data,
             success: success,
