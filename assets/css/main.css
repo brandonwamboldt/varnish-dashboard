@@ -4,6 +4,10 @@ body {
     padding-top: 80px;
 }
 
+a, a:focus, a:active {
+    outline: 0;
+}
+
 #vcl-file {
     background: #2d2d2d;
     color: #d3d0c8;
