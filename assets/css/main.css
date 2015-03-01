@@ -8,6 +8,21 @@ a, a:focus, a:active {
     outline: 0;
 }
 
+.view-vcl .panel-body {
+    position: relative;
+}
+
+.raw-vcl, .html-vcl {
+    position: absolute;
+    z-index: 10;
+    right: 20px;
+    top: 20px;
+}
+
+#new-vcl-input {
+    font-family: monospace;
+}
+
 #vcl-file {
     background: #2d2d2d;
     color: #d3d0c8;

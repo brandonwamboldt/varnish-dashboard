@@ -57,14 +57,17 @@
         <div class="row">
             <div class="col-md-4">
               <div class="panel panel-default">
-                <div class="panel-heading">VCLs</div>
+                <div class="panel-heading">
+                  VCLs
+                  <a class="btn btn-xs btn-success pull-right create-vcl"><i class="glyphicon glyphicon-plus"></i> Create VCL</a>
+                </div>
                 <div class="panel-body">
                   <table class="table table-hover" id="server-vcls">
                     <thead>
                       <tr>
                         <th>Name</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th></th>
                       </tr>
                     </thead>
 
@@ -75,9 +78,37 @@
             </div>
 
             <div class="col-md-8">
-              <div class="panel panel-default">
-                <div class="panel-heading" id="current-vcl-name">VCL: boot (current)</div>
+              <div class="panel panel-default new-vcl" style="display:none">
+                <div class="panel-heading" id="current-vcl-name">
+                  Creating New VCL
+                  <a class="btn btn-xs btn-success pull-right save-vcl" style="margin-left:6px;"><i class="glyphicon glyphicon-ok"></i> Save VCL</a>
+                  <a class="btn btn-xs btn-danger pull-right cancel-vcl"><i class="glyphicon glyphicon-remove"></i> Cancel VCL</a>
+                </div>
+
                 <div class="panel-body">
+                  <form>
+                    <div class="form-group" id="new-vcl-name-fg">
+                      <label>VCL Name:</label>
+                      <input id="new-vcl-name" class="form-control" type="text" placeholder="example.vcl">
+                    </div>
+
+                    <div class="form-group" id="new-vcl-input-fg">
+                      <label>VCL:</label>
+                      <textarea id="new-vcl-input" style="width:100%;height:600px;"></textarea>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <div class="panel panel-default view-vcl">
+                <div class="panel-heading" id="current-vcl-name">
+                  VCL: <span>boot (current)</span>
+                  <a class="btn btn-xs btn-danger pull-right discard-vcl" style="margin-left:6px">Discard VCL</a>
+                  <a class="btn btn-xs btn-success pull-right deploy-vcl">Deploy VCL</a>
+                </div>
+
+                <div class="panel-body">
+                  <a href="#" class="btn btn-xs btn-default raw-vcl">Toggle Raw Source</a>
                   <pre id="vcl-file"></pre>
                 </div>
               </div>
