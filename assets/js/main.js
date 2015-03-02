@@ -155,6 +155,9 @@
         vcl = vcl.replace(/(\s)(\.[a-z0-9]+)(\s|=)/mg, '$1<span class="vcl-variable">$2</span>$3');
         vcl = vcl.replace(/(\b)((req|bereq|client|resp)\.[A-Za-z0-9\.\-_]+)/mg, '$1<span class="vcl-variable">$2</span>');
 
+        // Man page detection
+        vcl = vcl.replace(/vcl\(<span class="vcl-constant">([0-9])<\/span>\)/i, '<a href="http://linux.die.net/man/$1/vcl" class="vcl-man">vcl($1)</a>');
+
         // Add line numbers
         vcl = vcl.replace(/(.*)\n/g, function(match, match2) {
             lineno++;

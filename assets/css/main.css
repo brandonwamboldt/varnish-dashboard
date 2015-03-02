@@ -37,6 +37,16 @@ a, a:focus, a:active {
     color: #747369;
 }
 
+#vcl-file .vcl-comment a {
+    color: #747369;
+    text-decoration: underline;
+}
+
+#vcl-file .vcl-comment a:hover {
+    color: #5b5a51;
+    text-decoration: none;
+}
+
 #vcl-file .vcl-line > .vcl-keyword {
     color: #cc99cc;
 }
