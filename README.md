@@ -19,15 +19,16 @@ Screenshots
 
 **Bans:**
 
-![Bans Screenshot](https://i.imgur.com/p12QI1i.png)
+![Bans Screenshot](https://i.imgur.com/UhDpRFS.png)
 
 **Manage Server:**
 
-![Manage Screenshot](https://i.imgur.com/IrDQLo8.png)
+![Manage Screenshot](https://i.imgur.com/p12QI1i.png)
 
 **VCL:**
 
-![VCL Screenshot](https://i.imgur.com/UhDpRFS.png)
+![VCL Screenshot](https://i.imgur.com/IrDQLo8.png)
+
 
 Setup
 -----
