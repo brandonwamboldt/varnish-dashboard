@@ -45,9 +45,9 @@
         for (var server in app.getEnabledServers()) {
             var html = '<div class="panel panel-default">';
             html += '<div class="panel-heading">';
-            html += 'Panic Log (' + app.getServer(server).name + ')';
-            html += '<a href="#" data-server="' + server + '" class="pull-right induce-panic btn btn-xs btn-danger" style="margin-left:6px;">Induce Panic</a>';
-            html += '<a href="#" data-server="' + server + '" class="pull-right clear-panic btn btn-xs btn-success" style="display:none">Clear Panic</a> ';
+            html += '<i class="glyphicon glyphicon-alert"></i> Panic Log (' + app.getServer(server).name + ')';
+            html += '<a href="#" data-server="' + server + '" class="pull-right induce-panic btn btn-xs btn-danger" style="margin-left:6px;"><i class="glyphicon glyphicon-exclamation-sign"></i> Induce Panic</a>';
+            html += '<a href="#" data-server="' + server + '" class="pull-right clear-panic btn btn-xs btn-success" style="display:none"><i class="glyphicon glyphicon-ban-circle"></i> Clear Panic</a> ';
             html += '</div>';
             html += '<div class="panel-body">';
             html += '<pre id="panic-log-' + server + '">Loading...</pre>';
