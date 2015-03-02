@@ -172,4 +172,5 @@ Users can still figure out how to hit appropriate Varnish Admin endpoints direct
 Known Issues
 ------------
 
-Due to cross site origin limitations, the dashboard will only work if it's on the same subdomain as varnish agent (preventing the usage of multiple servers). I've submitted a [patch to Varnish Agent](https://github.com/varnish/vagent2/pull/129) to fix this, but until it's merged, only one varnish backend is supported.
+Due to cross site origin limitations, the dashboard will only work if it's on the same subdomain as varnish agent (meaning you must use it with the `-H` option of Varnish Agent, preventing the usage of multiple servers). I've submitted a [patch to Varnish Agent](https://github.com/varnish/vagent2/pull/129) to fix this, but until it's merged, only one varnish backend is supported.
+
