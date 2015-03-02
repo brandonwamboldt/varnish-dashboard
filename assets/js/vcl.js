@@ -125,9 +125,9 @@
                 html += '<td class="list-vcl-status">' + response.vcls[i].status + '</td>';
 
                 if (current_vcl == response.vcls[i].name || (!current_vcl && response.vcls[i].status == 'active')) {
-                    html += '<td><a data-vcl="' + response.vcls[i].name + '" class="view-vcl btn btn-xs btn-default disabled"><i class="glyphicon glyphicon-search"></i> View</a></td>';
+                    html += '<td><a data-vcl="' + response.vcls[i].name + '" class="pull-right view-vcl btn btn-xs btn-default disabled"><i class="glyphicon glyphicon-search"></i> View</a></td>';
                 } else {
-                    html += '<td><a data-vcl="' + response.vcls[i].name + '" class="view-vcl btn btn-xs btn-default"><i class="glyphicon glyphicon-search"></i> View</a></td>';
+                    html += '<td><a data-vcl="' + response.vcls[i].name + '" class="pull-right view-vcl btn btn-xs btn-default"><i class="glyphicon glyphicon-search"></i> View</a></td>';
                 }
 
                 html += '</tr>';
