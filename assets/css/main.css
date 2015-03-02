@@ -37,6 +37,26 @@ a, a:focus, a:active {
     color: #747369;
 }
 
+#vcl-file .vcl-line > .vcl-keyword {
+    color: #cc99cc;
+}
+
+#vcl-file .vcl-line > .vcl-string {
+    color: #99cc99;
+}
+
+#vcl-file .vcl-line > .vcl-constant {
+    color: #f99157;
+}
+
+#vcl-file .vcl-line > .vcl-variable {
+    color: #f2776d;
+}
+
+#vcl-file .vcl-line > .vcl-builtin {
+    color: #66cccc;
+}
+
 .navbar > .container .navbar-brand {
 	padding: 2px;
 }

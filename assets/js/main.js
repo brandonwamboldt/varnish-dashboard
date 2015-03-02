@@ -126,6 +126,7 @@
         }
     });
 
+    // TODO: Implement a proper parser instead of hacky regexes
     app.highlightVcl = function(vcl) {
         var lineno = 0;
         var lines = vcl.match(/\n/g).length;
@@ -134,8 +135,25 @@
         // Escape HTML characters
         vcl = $('<div/>').text(vcl).html();
 
+        // String detection
+        vcl = vcl.replace(/("|')(.*?)("|')/mg, '$1<span class="vcl-string">$2</span>$3');
+
         // Detect comments
         vcl = vcl.replace(/^([\t ]*(#|\/\/).*)/mg, '<span class="vcl-comment">$1</span>');
+
+        // Keyword detection
+        vcl = vcl.replace(/(\s|^)(backend|sub|if|elsif|else|return|error|include|set)(\b)/mg, '$1<span class="vcl-keyword">$2</span>$3');
+
+        // Constant detection
+        vcl = vcl.replace(/(\(\s*)(pass|lookup|pipe|fetch|error|deliver)(\s*\))/mg, '$1<span class="vcl-constant">$2</span>$3');
+        vcl = vcl.replace(/(\b)([0-9]+(s|m|h|d|w|y)?)(\b)/mg, '$1<span class="vcl-constant">$2</span>$4');
+
+        // Builtin function detection
+        vcl = vcl.replace(/(^|\s|\b)(regsub|regsuball)(\s*\()/mg, '$1<span class="vcl-builtin">$2</span>$3');
+
+        // Variable detection
+        vcl = vcl.replace(/(\s)(\.[a-z0-9]+)(\s|=)/mg, '$1<span class="vcl-variable">$2</span>$3');
+        vcl = vcl.replace(/(\b)((req|bereq|client|resp)\.[A-Za-z0-9\.\-_]+)/mg, '$1<span class="vcl-variable">$2</span>');
 
         // Add line numbers
         vcl = vcl.replace(/(.*)\n/g, function(match, match2) {
