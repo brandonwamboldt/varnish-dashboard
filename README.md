@@ -10,7 +10,24 @@ Enhanced Varnish Dashboard also has support for multiple varnish servers, and
 allows users to view a combined view (useful if you have multiple duplicate
 varnish servers for redundancy), as well as individual views.
 
-![Dashboard Screenshot](http://i.imgur.com/E6JwETH.png)
+Screenshots
+-----------
+
+**Dashboard:**
+
+![Dashboard Screenshot](https://i.imgur.com/PSBjz7y.png)
+
+**Bans:**
+
+![Bans Screenshot](https://i.imgur.com/p12QI1i.png)
+
+**Manage Server:**
+
+![Manage Screenshot](https://i.imgur.com/IrDQLo8.png)
+
+**VCL:**
+
+![VCL Screenshot](https://i.imgur.com/UhDpRFS.png)
 
 Setup
 -----
