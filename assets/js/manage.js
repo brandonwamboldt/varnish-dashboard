@@ -34,7 +34,11 @@
                 var output = '';
 
                 for (var i = 0; i < responses.length; i++) {
-                    output += app.getServer(i).name + ':<br><br><pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
+                    if (responses.length === 1) {
+                        output += '<pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
+                    } else {
+                        output += app.getServer(i).name + ':<br><br><pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
+                    }
                 }
 
                 $('#cmd-output .modal-body').html(output);
@@ -45,7 +49,13 @@
         for (var server in app.getEnabledServers()) {
             var html = '<div class="panel panel-default">';
             html += '<div class="panel-heading">';
-            html += '<i class="glyphicon glyphicon-alert"></i> Panic Log (' + app.getServer(server).name + ')';
+
+            if (app.isCombinedView()) {
+                html += '<i class="glyphicon glyphicon-alert"></i> Panic Log (' + app.getServer(server).name + ')';
+            } else {
+                html += '<i class="glyphicon glyphicon-alert"></i> Panic Log';
+            }
+
             html += '<a href="#" data-server="' + server + '" class="pull-right induce-panic btn btn-xs btn-danger" style="margin-left:6px;"><i class="glyphicon glyphicon-exclamation-sign"></i> Induce Panic</a>';
             html += '<a href="#" data-server="' + server + '" class="pull-right clear-panic btn btn-xs btn-success" style="display:none"><i class="glyphicon glyphicon-ban-circle"></i> Clear Panic</a> ';
             html += '</div>';
@@ -78,6 +88,7 @@
         });
 
         getServerPanicLogs();
+        getServerVersions();
     });
 
     function getServerPanicLogs() {
@@ -90,6 +101,33 @@
                 } else {
                     $('.clear-panic[data-server="' + i + '"]').show();
                 }
+            }
+        });
+    }
+
+    function getServerVersions() {
+        app.multiPost(app.getEnabledServers(), '/direct', 'banner', function(responses) {
+            var varnish_version = false, multiple_versions = false, version;
+
+            for (var i in responses) {
+                version = responses[i].match(/varnish-(.*?) revision ([a-z0-9]+)/i);
+
+                if (!varnish_version) {
+                    varnish_version = version;
+                } else if (varnish_version[2] != version[2]) {
+                    multiple_versions = true;
+                    break;
+                }
+            }
+
+            if (multiple_versions) {
+                for (var i in responses) {
+                    version = responses[i].match(/varnish-(.*?) revision ([a-z0-9]+)/i);
+
+                    $('#varnish-version').append(app.getServer(i).name + ': Varnish ' + version[1] + ' revision ' + version[2] + '<br>');
+                }
+            } else {
+                $('#varnish-version').html('Varnish ' + version[1] + ' revision ' + version[2]);
             }
         });
     }
