@@ -124,10 +124,10 @@
                 for (var i in responses) {
                     version = responses[i].match(/varnish-(.*?) revision ([a-z0-9]+)/i);
 
-                    $('#varnish-version').append(app.getServer(i).name + ': Varnish ' + version[1] + ' revision ' + version[2] + '<br>');
+                    $('#varnish-version').append(app.getServer(i).name + ': Varnish ' + version[1] + ' revision <a href="https://github.com/varnish/Varnish-Cache/commit/' + version[2] + '">' + version[2] + '</a>');
                 }
             } else {
-                $('#varnish-version').html('Varnish ' + version[1] + ' revision ' + version[2]);
+                $('#varnish-version').html('Varnish ' + version[1] + ' revision <a href="https://github.com/varnish/Varnish-Cache/commit/' + version[2] + '">' + version[2] + '</a>');
             }
         });
     }
