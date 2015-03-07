@@ -34,7 +34,7 @@
                 var output = '';
 
                 for (var i = 0; i < responses.length; i++) {
-                    output += servers[i].name + ':<br><br><pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
+                    output += app.getServer(i).name + ':<br><br><pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
                 }
 
                 $('#cmd-output .modal-body').html(output);
