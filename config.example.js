@@ -8,6 +8,7 @@ var config = {
 	}],
 	update_freq: 2000,
 	max_points: 100,
+	show_bans_page: true,
 	show_manage_server_page: true,
 	show_vcl_page: true,
 	show_stats_page: true,

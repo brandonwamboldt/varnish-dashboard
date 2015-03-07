@@ -2,6 +2,7 @@
     var default_config = {
         update_freq: 2000,
         max_points: 100,
+        show_bans_page: true,
         show_manage_server_page: true,
         show_vcl_page: true,
         show_stats_page: true,
@@ -88,6 +89,10 @@
             e.preventDefault();
             app.switchServerView($(this).data('server'));
         });
+
+        if (!config.show_bans_page) {
+            $('.nav a[href="./bans.html"]').hide();
+        }
 
         if (!config.show_manage_server_page) {
             $('.nav a[href="./manage.html"]').hide();
