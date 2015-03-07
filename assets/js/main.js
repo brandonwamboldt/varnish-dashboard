@@ -251,8 +251,23 @@
 
             for (var k in params) {
                 param = params[k];
+                var is_default = true;
 
-                var html = '<tr>';
+                // Both numbers
+                if (response[param].value.match(/^[0-9.]+$/) && response[param].default.match(/^[0-9.]+$/)) {
+                    if (parseFloat(response[param].value).toFixed(10) != parseFloat(response[param].value).toFixed(10)) {
+                        is_default = false;
+                    }
+                } else if (response[param].value !== response[param].default) {
+                    is_default = false;
+                }
+
+                if (is_default) {
+                    var html = '<tr>';
+                } else {
+                    var html = '<tr class="info">';
+                }
+
                 html += '<td style="font-family:monospace">' + param + '</td>';
                 html += '<td style="font-family:monospace">' + response[param].value + '</td>';
                 html += '<td style="font-family:monospace">' + response[param].default + '</td>';
