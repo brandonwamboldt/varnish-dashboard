@@ -2,6 +2,8 @@
     var default_config = {
         update_freq: 2000,
         max_points: 100,
+        default_log_fetch: 100000,
+        default_log_display: 100,
         show_bans_page: true,
         show_manage_server_page: true,
         show_vcl_page: true,
@@ -313,6 +315,10 @@
 
     app.getCurrentServer = function() {
         return servers[currentServer];
+    };
+
+    app.getConfig = function(param) {
+        return config[param];
     };
 
     app.switchServerView = function(server) {

@@ -59,13 +59,20 @@
               <div class="panel panel-default">
                 <div class="panel-heading"><i class="glyphicon glyphicon-cog"></i> Log Options</div>
                 <div class="panel-body">
-                  Note: Log items are displayed in chronological order, starting with the oldest entries. Due to API
-                  limitations, this cannot be changed.<br><br>
+                  Note: Log items are <strong>fetched</strong> in chronological order, starting with the oldest entries.
+                  Due to API limitations, this cannot be changed. <br><br>
+
+                  Items are <strong>displayed</strong> locally in reverse chronological order, with newer entries
+                  first.<br><br>
 
                   <form>
-                    <strong># of log items to display (<code>-k</code>):</strong><br><br>
+                    <strong># of log items to fetch (<code>-k</code>):</strong><br><br>
 
-                    <input class="form-control" type="text" id="logapi-limit" value="100"><br>
+                    <input class="form-control" type="text" id="logapi-limit" value=""><br>
+
+                    <strong># of log items to display:</strong><br><br>
+
+                    <input class="form-control" type="text" id="logapi-display" value=""><br>
 
                     <strong>Log Entry Tag (<code>-i</code>):</strong><br><br>
 
@@ -139,6 +146,8 @@
                   <i class="glyphicon glyphicon-cog"></i>
                   <span>Logs</span>
                   <a href="#" id="refresh-logs" class="btn btn-xs btn-primary pull-right"><i class="glyphicon glyphicon-refresh"></i> Refresh</a>
+                  <a href="#" id="enable-auto-refresh" class="btn btn-xs btn-success pull-right" style="margin-right:6px"><i class="glyphicon glyphicon-refresh"></i> Enable Auto Refresh</a>
+                  <a href="#" id="disable-auto-refresh" class="btn btn-xs btn-warning pull-right" style="display:none;margin-right:6px"><i class="glyphicon glyphicon-refresh"></i> Disable Auto Refresh</a>
                 </div>
 
                 <div class="panel-body">
@@ -152,7 +161,7 @@
                       </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody style="font-family:monospace">
                       <tr><td colspan="4">No log entries found</td></tr>
                     </tbody>
                   </table>

@@ -1,7 +1,15 @@
 (function(app) {
-    var varnish_api_version;
+    var varnish_api_version, refresh_interval;
 
     $(document).ready(function() {
+        if ($('#logapi-limit').val() === '') {
+            $('#logapi-limit').val(app.getConfig('default_log_fetch'));
+        }
+
+        if ($('#logapi-display').val() === '') {
+            $('#logapi-display').val(app.getConfig('default_log_display'));
+        }
+
         $('#logapi-tag').on('change', function(e) {
             if ($(this).val() === '') {
                 $('#log-entry-regex').hide();
@@ -20,10 +28,32 @@
             getServerLogs();
         });
 
+        $('#logapi-display').change(function() {
+            getServerLogs();
+        });
+
         $('#refresh-logs').on('click', function(e) {
             e.preventDefault();
 
             getServerLogs();
+        });
+
+        $('#enable-auto-refresh').on('click', function(e) {
+            e.preventDefault();
+            $(this).hide();
+            $('#disable-auto-refresh').show();
+
+            refresh_interval = setInterval(function() {
+                getServerLogs();
+            }, app.getConfig('update_freq'));
+        });
+
+        $('#disable-auto-refresh').on('click', function(e) {
+            e.preventDefault();
+            $(this).hide();
+            $('#enable-auto-refresh').show();
+
+            clearInterval(refresh_interval);
         });
 
         getServerVersions();
@@ -60,6 +90,7 @@
 
     function getServerLogs() {
         var limit = $('#logapi-limit').val();
+        var display = parseInt($('#logapi-display').val());
         var tag   = $('#logapi-tag').val();
         var regex = $('#logapi-regex').val().replace(/\//g, '\\x2f');
         var url   = '/log/' + limit;
@@ -86,7 +117,8 @@
                     $('#server-logs .panel-heading span').html('Logs (<code>varnishlog -k ' + limit + '</code>)');
                 }
 
-                for (var j in logs) {
+                for (var j = logs.length - 1; j >= Math.max(logs.length - display, 0); j--) {
+                    logs[j].value = logs[j].value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     $('#server-logs tbody').append('<tr><td>' + logs[j].fd + '</td><td>' + logs[j].tag + '</td><td>' + logs[j].type + '</td><td>' + logs[j].value + '</td></tr>');
                 }
             }
