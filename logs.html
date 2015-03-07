@@ -55,8 +55,109 @@
 
     <div class="container page-body" id="logs-body">
         <div class="row">
-            <div class="col-md-12">
-              <div class="alert alert-warning">This page is under construction</div>
+            <div class="col-md-4">
+              <div class="panel panel-default">
+                <div class="panel-heading"><i class="glyphicon glyphicon-cog"></i> Log Options</div>
+                <div class="panel-body">
+                  Note: Log items are displayed in chronological order, starting with the oldest entries. Due to API
+                  limitations, this cannot be changed.<br><br>
+
+                  <form>
+                    <strong># of log items to display (<code>-k</code>):</strong><br><br>
+
+                    <input class="form-control" type="text" id="logapi-limit" value="100"><br>
+
+                    <strong>Log Entry Tag (<code>-i</code>):</strong><br><br>
+
+                    <select class="form-control" id="logapi-tag">
+                      <option value=""> - All Tags - </option>
+                      <option value="Backend">Backend</option>
+                      <option value="BackendClose">BackendClose</option>
+                      <option value="BackendOpen">BackendOpen</option>
+                      <option value="BackendReuse">BackendReuse</option>
+                      <option value="BackendXID">BackendXID</option>
+                      <option value="CLI">CLI</option>
+                      <option value="ClientAddr">ClientAddr</option>
+                      <option value="Debug">Debug</option>
+                      <option value="Error">Error</option>
+                      <option value="ExpBan">ExpBan</option>
+                      <option value="ExpKill">ExpKill</option>
+                      <option value="ExpPick">ExpPick</option>
+                      <option value="Hit">Hit</option>
+                      <option value="HitPass">HitPass</option>
+                      <option value="HttpError">HttpError</option>
+                      <option value="HttpGarbage">HttpGarbage</option>
+                      <option value="Length">Length</option>
+                      <option value="ObjHeader">ObjHeader</option>
+                      <option value="ObjLostHeader">ObjLostHeader</option>
+                      <option value="ObjProtocol">ObjProtocol</option>
+                      <option value="ObjRequest">ObjRequest</option>
+                      <option value="ObjResponse">ObjResponse</option>
+                      <option value="ObjStatus">ObjStatus</option>
+                      <option value="ObjURL">ObjURL</option>
+                      <option value="ReqEnd">ReqEnd</option>
+                      <option value="ReqStart">ReqStart</option>
+                      <option value="RxHeader">RxHeader</option>
+                      <option value="RxLostHeader">RxLostHeader</option>
+                      <option value="RxProtocol">RxProtocol</option>
+                      <option value="RxRequest">RxRequest</option>
+                      <option value="RxResponse">RxResponse</option>
+                      <option value="RxStatus">RxStatus</option>
+                      <option value="RxURL">RxURL</option>
+                      <option value="SessionClose">SessionClose</option>
+                      <option value="SessionOpen">SessionOpen</option>
+                      <option value="StatAddr">StatAddr</option>
+                      <option value="StatSess">StatSess</option>
+                      <option value="TTL">TTL</option>
+                      <option value="TxHeader">TxHeader</option>
+                      <option value="TxLostHeader">TxLostHeader</option>
+                      <option value="TxProtocol">TxProtocol</option>
+                      <option value="TxRequest">TxRequest</option>
+                      <option value="TxResponse">TxResponse</option>
+                      <option value="TxStatus">TxStatus</option>
+                      <option value="TxURL">TxURL</option>
+                      <option value="VCL_acl">VCL_acl</option>
+                      <option value="VCL_call">VCL_call</option>
+                      <option value="VCL_return">VCL_return</option>
+                      <option value="VCL_trace">VCL_trace</option>
+                      <option value="WorkThread">WorkThread</option>
+                    </select>
+
+                    <div id="log-entry-regex" style="display:none">
+                      <br><strong>Log Entry Regex (<code>-I</code>):</strong><br><br>
+
+                      <input class="form-control" type="text" id="logapi-regex" value="">
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-8" id="server-logs">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <i class="glyphicon glyphicon-cog"></i>
+                  <span>Logs</span>
+                  <a href="#" id="refresh-logs" class="btn btn-xs btn-primary pull-right"><i class="glyphicon glyphicon-refresh"></i> Refresh</a>
+                </div>
+
+                <div class="panel-body">
+                  <table id="server-logs-table" class="table table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <th style="width:60px;">FD</th>
+                        <th style="width:140px;">Tag</th>
+                        <th style="width:80px;">Type</th>
+                        <th>Value</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      <tr><td colspan="4">No log entries found</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
         </div>
     </div>
@@ -89,6 +190,7 @@
     <script src="./vendor/flot/jquery.flot.stack.min.js"></script>
     <script src="./vendor/bootstrap-3.3.2-dist/js/bootstrap.min.js"></script>
     <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/logs.js"></script>
 </body>
 
 </html>
