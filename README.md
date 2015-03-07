@@ -29,6 +29,9 @@ Screenshots
 
 ![VCL Screenshot](https://i.imgur.com/IrDQLo8.png)
 
+**Logs:**
+
+![Logs Screenshot](https://i.imgur.com/a7E9rip.png)
 
 Setup
 -----
@@ -90,6 +93,9 @@ var config = {
 	}],
 	update_freq: 2000,
 	max_points: 100,
+    default_log_fetch: 100000,
+    default_log_display: 100,
+	show_bans_page: true,
 	show_manage_server_page: true,
 	show_vcl_page: true,
 	show_stats_page: true,
@@ -132,6 +138,20 @@ The frequency of updates for stats & status information, in milliseconds. The de
 ### max_points
 
 The maximum number of data points to render on the bandwidth/requests per second graphs on the dashboard. Higher numbers are slower to render, but result in a more detailed graph.
+
+### default_log_fetch
+
+The default number of log entries to **fetch** from Varnish. Logs are retrieved in chronological order, with the oldest first, so it's best to make this a really high number if you want to see recent log entries (since they come last). This is an API constraint with no work around.
+
+### default_log_display
+
+The default number of log entries to **display** from Varnish. Logs are displayed in reverse chronological order, with the newest first. It's recommended not to make this number too high or it may slow down your browser.
+
+### show_bans_page
+
+Whether or not to display the "Bans" page in the nav.
+
+Users can still figure out how to hit appropriate Varnish Admin endpoints directly, so don't use this as a security feature. Think of it as a way to prevent users from accidentally breaking stuff.
 
 ### show_manage_server_page
 
