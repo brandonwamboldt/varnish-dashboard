@@ -56,7 +56,8 @@
             clearInterval(refresh_interval);
         });
 
-        getServerVersions();
+        getServerLogs();
+        //getServerVersions();
     });
 
     function getServerVersions() {
