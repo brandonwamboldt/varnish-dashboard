@@ -203,8 +203,8 @@
         html += '        <tr><td><abbr title="The status as reported by the Varnish control daemon">Status</abbr></td><td>' + server.status_text + '</td></tr>';
 
         if (server.current_stats) {
-            html += '<tr><td><abbr title="The uptime for the Varnish daemon">Uptime</abbr></td><td>' + app.secondsToHumanTime(server.current_stats.uptime.value) + '</td></tr>';
-            html += '<tr><td><abbr title="The number of varnish modules currently loaded">VMODs</abbr></td><td>' + server.current_stats.vmods.value + '</td></tr>';
+            html += '<tr><td><abbr title="The uptime for the Varnish daemon">Uptime</abbr></td><td>' + app.secondsToHumanTime(app.getStat(server.current_stats, 'uptime')) + '</td></tr>';
+            html += '<tr><td><abbr title="The number of varnish modules currently loaded">VMODs</abbr></td><td>' + app.getStat(server.current_stats, 'vmods') + '</td></tr>';
         }
 
         html += '      </tbody>';
@@ -230,20 +230,20 @@
         var lTimestamp    = Date.parse(last_stats.timestamp);
         var timeSinceLast = (cTimestamp - lTimestamp) / 1000;
         stats.timestamp   = cTimestamp;
-        stats.uptime      = current_stats.uptime.value;
+        stats.uptime      = app.getStat(current_stats, 'uptime');
 
         // Calculate request rate
-        var cReqTotal = current_stats.client_req.value;
-        var lReqTotal = last_stats.client_req.value;
+        var cReqTotal = app.getStat(current_stats, 'client_req');
+        var lReqTotal = app.getStat(last_stats, 'client_req');
         var reqGauge  = cReqTotal - lReqTotal;
         stats.request_rate = reqGauge / timeSinceLast;
         stats.avg_request_rate = cReqTotal / stats.uptime;
 
         // Calculate bandwidth
-        var cHeaderBytes  = current_stats.s_hdrbytes.value;
-        var lHeaderBytes  = last_stats.s_hdrbytes.value;
-        var cBodyBytes    = current_stats.s_bodybytes.value;
-        var lBodyBytes    = last_stats.s_bodybytes.value;
+        var cHeaderBytes  = app.getStat(current_stats, 's_hdrbytes');
+        var lHeaderBytes  = app.getStat(last_stats, 's_hdrbytes');
+        var cBodyBytes    = app.getStat(current_stats, 's_bodybytes');
+        var lBodyBytes    = app.getStat(last_stats, 's_bodybytes');
         var cTotalBytes   = cHeaderBytes + cBodyBytes;
         var lTotalBytes   = lHeaderBytes + lBodyBytes;
         var bytesGauge    = cTotalBytes - lTotalBytes;
@@ -251,8 +251,8 @@
         stats.avg_transfer_rate = cTotalBytes / stats.uptime;
 
         // Connection rate
-        var cConnTotal = current_stats.client_req.value;
-        var lConnTotal = last_stats.client_req.value;
+        var cConnTotal = app.getStat(current_stats, 'client_req');
+        var lConnTotal = app.getStat(last_stats, 'client_req');
         var connGauge  = cConnTotal - lConnTotal;
         stats.conn_rate = connGauge / timeSinceLast;
         stats.avg_conn_rate = cConnTotal / stats.uptime;
@@ -262,74 +262,74 @@
         stats.avg_req_per_conn_rate = (stats.avg_conn_rate / stats.avg_request_rate).toFixed(1);
 
         // Backend Connections
-        var cTotal = current_stats.backend_conn.value;
-        var lTotal = last_stats.backend_conn.value;
+        var cTotal = app.getStat(current_stats, 'backend_conn');
+        var lTotal = app.getStat(last_stats, 'backend_conn');
         var gauge = cTotal - lTotal;
         stats.backend_conn_rate = gauge / timeSinceLast;
         stats.avg_backend_conn_rate = cTotal / stats.uptime;
 
         // Fetches & Passes
-        var cTotal = current_stats.s_fetch.value + current_stats.s_pass.value;
-        var lTotal = last_stats.s_fetch.value + last_stats.s_pass.value;
+        var cTotal = app.getStat(current_stats, 's_fetch') + app.getStat(current_stats, 's_pass');
+        var lTotal = app.getStat(last_stats, 's_fetch') + app.getStat(last_stats, 's_pass');
         var gauge = cTotal - lTotal;
         stats.fetchpass = gauge / timeSinceLast;
         stats.avg_fetchpass = cTotal / stats.uptime;
 
         // Backend Fails
-        var cTotal = current_stats.backend_fail.value;
-        var lTotal = last_stats.backend_fail.value;
+        var cTotal = app.getStat(current_stats, 'backend_fail');
+        var lTotal = app.getStat(last_stats, 'backend_fail');
         var gauge = cTotal - lTotal;
         stats.backend_fail = gauge / timeSinceLast;
         stats.avg_backend_fail = cTotal / stats.uptime;
 
         // Backend Reuse
-        var cTotal = current_stats.backend_reuse.value;
-        var lTotal = last_stats.backend_reuse.value;
+        var cTotal = app.getStat(current_stats, 'backend_reuse');
+        var lTotal = app.getStat(last_stats, 'backend_reuse');
         var gauge = cTotal - lTotal;
         stats.backend_reuse = gauge / timeSinceLast;
         stats.avg_backend_reuse = cTotal / stats.uptime;
 
         // Cache Hit Ratio
-        var requests = current_stats.client_req.value - last_stats.client_req.value;
-        var hits     = current_stats.cache_hit.value - last_stats.cache_hit.value;
+        var requests = app.getStat(current_stats, 'client_req') - app.getStat(last_stats, 'client_req');
+        var hits     = app.getStat(current_stats, 'cache_hit') - app.getStat(last_stats, 'cache_hit');
         stats.cache_hit_ratio = (hits / requests * 100);
-        stats.avg_cache_hit_ratio = (current_stats.cache_hit.value / current_stats.client_req.value * 100);
+        stats.avg_cache_hit_ratio = (app.getStat(current_stats, 'cache_hit') / app.getStat(current_stats, 'client_req') * 100);
 
         // Cache hits
-        var gauge = current_stats.cache_hit.value - last_stats.cache_hit.value;
+        var gauge = app.getStat(current_stats, 'cache_hit') - app.getStat(last_stats, 'cache_hit');
         stats.cache_hit = gauge / timeSinceLast;
-        stats.avg_cache_hit = current_stats.cache_hit.value / stats.uptime;
+        stats.avg_cache_hit = app.getStat(current_stats, 'cache_hit') / stats.uptime;
 
         // Cache misses
-        var gauge = current_stats.cache_miss.value - last_stats.cache_miss.value;
+        var gauge = app.getStat(current_stats, 'cache_miss') - app.getStat(last_stats, 'cache_miss');
         stats.cache_miss = gauge / timeSinceLast;
-        stats.avg_cache_miss = current_stats.cache_miss.value / stats.uptime;
+        stats.avg_cache_miss = app.getStat(current_stats, 'cache_miss') / stats.uptime;
 
         // Cache size
-        var gauge = current_stats.n_object.value - last_stats.n_object.value;
+        var gauge = app.getStat(current_stats, 'n_object') - app.getStat(last_stats, 'n_object');
         stats.n_object = gauge / timeSinceLast;
-        stats.avg_n_object = current_stats.n_object.value / stats.uptime;
+        stats.avg_n_object = app.getStat(current_stats, 'n_object') / stats.uptime;
 
         // Workers created
-        var gauge = current_stats.n_wrk_create.value - last_stats.n_wrk_create.value;
+        var gauge = app.getStat(current_stats, 'n_wrk_create') - app.getStat(last_stats, 'n_wrk_create');
         stats.n_wrk_create = gauge / timeSinceLast;
-        stats.avg_n_wrk_create = current_stats.n_wrk_create.value / stats.uptime;
+        stats.avg_n_wrk_create = app.getStat(current_stats, 'n_wrk_create') / stats.uptime;
 
         // SHM writes
-        var gauge = current_stats.shm_writes.value - last_stats.shm_writes.value;
+        var gauge = app.getStat(current_stats, 'shm_writes') - app.getStat(last_stats, 'shm_writes');
         stats.shm_writes = gauge / timeSinceLast;
-        stats.avg_shm_writes = current_stats.shm_writes.value / stats.uptime;
+        stats.avg_shm_writes = app.getStat(current_stats, 'shm_writes') / stats.uptime;
 
         // ESI issues
-        var gauge_error = current_stats.esi_errors.value - last_stats.esi_errors.value;
-        var gauge_warn = current_stats.esi_warnings.value - last_stats.esi_warnings.value;
+        var gauge_error = app.getStat(current_stats, 'esi_errors') - app.getStat(last_stats, 'esi_errors');
+        var gauge_warn = app.getStat(current_stats, 'esi_warnings') - app.getStat(last_stats, 'esi_warnings');
         stats.esi_issues = (gauge_error + gauge_warn) / timeSinceLast;
-        stats.avg_esi_issues = (current_stats.esi_errors.value + current_stats.esi_warnings.value) / stats.uptime;
+        stats.avg_esi_issues = (app.getStat(current_stats, 'esi_errors') + app.getStat(current_stats, 'esi_warnings')) / stats.uptime;
 
         // Accept Failures
-        var gauge = current_stats.accept_fail.value - last_stats.accept_fail.value;
+        var gauge = app.getStat(current_stats, 'accept_fail') - app.getStat(last_stats, 'accept_fail');
         stats.accept_fail = gauge / timeSinceLast;
-        stats.avg_accept_fail = current_stats.accept_fail.value / stats.uptime;
+        stats.avg_accept_fail = app.getStat(current_stats, 'accept_fail') / stats.uptime;
 
         // Zero out NaN values
         for (var j in stats) {

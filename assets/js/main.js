@@ -568,5 +568,38 @@
         }
     }
 
+    app.getStat = function(stats, stat) {
+        var version = 3;
+
+        if (typeof stats["MAIN.uptime"] !== 'undefined') {
+            version = 4;
+        }
+
+        if (version == 3) {
+            if (typeof stats[stat] === 'undefined') {
+                console.log('app.getStat(): "' + stat + '" is undefined');
+            }
+
+            return stats[stat].value;
+        } else {
+            if (stat === 's_hdrbytes') {
+                return stats['MAIN.s_req_hdrbytes'].value + stats['MAIN.s_resp_hdrbytes'].value;
+            } else if (stat === 's_bodybytes') {
+                return stats['MAIN.s_req_bodybytes'].value + stats['MAIN.s_resp_bodybytes'].value;
+            } else if (stat === 'accept_fail') {
+                return stats['MAIN.sess_fail'].value;
+            } else if (stat === 'n_wrk_create') {
+                return stats['MAIN.threads_created'].value;
+            }
+
+            if (typeof stats['MAIN.' + stat] === 'undefined') {
+                console.log('app.getStat(): "' + "MAIN." + stat + '" is undefined');
+                return 0;
+            }
+
+            return stats['MAIN.' + stat].value;
+        }
+    };
+
     $('abbr').tooltip()
 })(window.app = {});
