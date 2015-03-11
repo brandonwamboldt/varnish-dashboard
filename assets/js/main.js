@@ -459,6 +459,8 @@
     app.updateServerStats = function() {
         var servers = app.getEnabledServers();
         var stats = [];
+        var diff_version = false;
+        var version = false;
 
         for (var i = 0; i < servers.length; i++) {
             if (typeof stats.timestamp === 'undefined') {
@@ -469,7 +471,25 @@
                         stats[j] = servers[i].current_stats[j];
                     }
                 }
+
+                if (typeof servers[i].current_stats['MAIN.uptime'] !== 'undefined') {
+                    version = '4.0';
+                } else {
+                    version = '3.0';
+                }
             } else {
+                if (typeof servers[i].current_stats['MAIN.uptime'] !== 'undefined') {
+                    if (version !== '4.0') {
+                        diff_version = true;
+                        break;
+                    }
+                } else {
+                    if (version !== '3.0') {
+                        diff_version = true;
+                        break;
+                    }
+                }
+
                 for (var j in servers[i].current_stats) {
                     if (j == 'timestamp') {
                         continue;
@@ -478,6 +498,11 @@
                     stats[j].value = stats[j].value + servers[i].current_stats[j].value;
                 }
             }
+        }
+
+        if (diff_version) {
+            $('#server-stats').replaceWith('<div class="alert alert-danger">Cannot display stats in combined view due to different major versions (e.g. 3.0 and 4.0). Please select a single server.</div>');
+            return;
         }
 
         $('#server-stats tbody').html('');
