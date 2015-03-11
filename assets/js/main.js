@@ -146,7 +146,7 @@
         vcl = vcl.replace(/^([\t ]*(#|\/\/).*)/mg, '<span class="vcl-comment">$1</span>');
 
         // Keyword detection
-        vcl = vcl.replace(/(\s|^)(acl|import|backend|sub|if|elsif|else|return|error|include|set|unset|remove)(\b)/mg, '$1<span class="vcl-keyword">$2</span>$3');
+        vcl = vcl.replace(/(\s|^)(acl|import|backend|sub|if|elsif|else|return|error|include|set|unset|remove|vcl)(\b)/mg, '$1<span class="vcl-keyword">$2</span>$3');
 
         // Constant detection
         vcl = vcl.replace(/(\(\s*)(pass|lookup|pipe|fetch|error|purge|deliver)(\s*\))/mg, '$1<span class="vcl-constant">$2</span>$3');
