@@ -1,5 +1,5 @@
 (function(app) {
-    var varnish_api_version, refresh_interval;
+    var varnish_api_version, refresh_interval, enabled = true;
 
     $(document).ready(function() {
         if ($('#logapi-limit').val() === '') {
@@ -56,8 +56,7 @@
             clearInterval(refresh_interval);
         });
 
-        getServerLogs();
-        //getServerVersions();
+        getServerVersions();
     });
 
     function getServerVersions() {
@@ -77,14 +76,45 @@
 
             if (multiple_versions) {
                 $('#server-logs').html('<div class="alert alert-danger">Cannot display logs in combined view due to different major versions (e.g. 3.0 and 4.0). Please select a single server.</div>');
+                enabled = false;
             } else {
                 varnish_api_version = varnish_version[1];
+                var table_html = '';
 
-                if (varnish_api_version != '3.0') {
-                    $('#server-logs').html('<div class="alert alert-danger">This dashboard doesn\'t currently support the logs API for Varnish 4.0. Please ask the author on GitHub to add support.</div>');
+                if (varnish_api_version === '3.0') {
+                    table_html += '<table class="table table-bordered table-hover">';
+                    table_html += '<thead>';
+                    table_html += '<tr>';
+                    table_html += '<th style="width:60px;">FD</th>';
+                    table_html += '<th style="width:140px;">Tag</th>';
+                    table_html += '<th style="width:80px;">Type</th>';
+                    table_html += '<th>Value</th>';
+                    table_html += '</tr>';
+                    table_html += '</thead>';
+                    table_html += '<tbody style="font-family:monospace">';
+                    table_html += '<tr><td colspan="4">No log entries found</td></tr>';
+                    table_html += '</tbody>';
+                    table_html += '</table>';
                 } else {
-                    getServerLogs();
+                    table_html += '<table class="table table-bordered table-hover">';
+                    table_html += '<thead>';
+                    table_html += '<tr>';
+                    table_html += '<th style="width:60px;">VXID</th>';
+                    table_html += '<th style="width:140px;">Tag</th>';
+                    table_html += '<th style="width:80px;">Type</th>';
+                    table_html += '<th style="width:80px;">Reason</th>';
+                    table_html += '<th>Value</th>';
+                    table_html += '</tr>';
+                    table_html += '</thead>';
+                    table_html += '<tbody style="font-family:monospace">';
+                    table_html += '<tr><td colspan="5">No log entries found</td></tr>';
+                    table_html += '</tbody>';
+                    table_html += '</table>';
                 }
+
+                $('#server-logs .panel-body').html(table_html);
+
+                getServerLogs();
             }
         });
     }
@@ -104,6 +134,10 @@
             url += '/' + regex;
         }
 
+        if (!enabled) {
+            return false;
+        }
+
         app.multiGet(app.getEnabledServers(), url, function(responses) {
             $('#server-logs tbody').html('');
 
@@ -120,12 +154,21 @@
 
                 for (var j = logs.length - 1; j >= Math.max(logs.length - display, 0); j--) {
                     logs[j].value = logs[j].value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    $('#server-logs tbody').append('<tr><td>' + logs[j].fd + '</td><td>' + logs[j].tag + '</td><td>' + logs[j].type + '</td><td>' + logs[j].value + '</td></tr>');
+
+                    if (varnish_api_version === '3.0') {
+                        $('#server-logs tbody').append('<tr><td>' + logs[j].fd + '</td><td>' + logs[j].tag + '</td><td>' + logs[j].type + '</td><td>' + logs[j].value + '</td></tr>');
+                    } else {
+                        $('#server-logs tbody').append('<tr><td>' + logs[j].vxid + '</td><td>' + logs[j].tag + '</td><td>' + logs[j].type + '</td><td>' + logs[j].reason + '</td><td>' + logs[j].value + '</td></tr>');
+                    }
                 }
             }
 
             if ($('#server-logs tbody tr').length === 0) {
-                $('#server-logs tbody').append('<tr><td colspan="4">No log entries found</td></tr>');
+                if (varnish_api_version === '3.0') {
+                    $('#server-logs tbody').append('<tr><td colspan="4">No log entries found</td></tr>');
+                } else {
+                    $('#server-logs tbody').append('<tr><td colspan="5">No log entries found</td></tr>');
+                }
             }
         });
     }
