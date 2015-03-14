@@ -1,7 +1,7 @@
 (function(app) {
     var current_vcl, active_vcl, raw_vcl, html_vcl;
 
-    $(document).ready(function() {
+    app.ready(function() {
         if (app.isCombinedView()) {
             $('.page-body').html('<div class="alert alert-danger" role="alert">This page does not work in combined view mode, please select a specific server to view</div>');
         } else {
@@ -143,6 +143,50 @@
         }, 'json');
     }
 
+    // TODO: Implement a proper parser instead of hacky regexes
+    function highlightVcl(vcl) {
+        var lineno = 0;
+        var lines = vcl.match(/\n/g).length;
+        var padding = lines.toString().length;
+
+        // Escape HTML characters
+        vcl = $('<div/>').text(vcl).html();
+
+        // String detection
+        vcl = vcl.replace(/("|')(.*?)("|')/mg, '$1<span class="vcl-string">$2</span>$3');
+
+        // Detect comments
+        vcl = vcl.replace(/^([\t ]*(#|\/\/).*)/mg, '<span class="vcl-comment">$1</span>');
+
+        // Keyword detection
+        vcl = vcl.replace(/(\s|^)(acl|import|backend|sub|if|elsif|else|return|error|include|set|unset|remove|vcl)(\b)/mg, '$1<span class="vcl-keyword">$2</span>$3');
+
+        // Constant detection
+        vcl = vcl.replace(/(\(\s*)(pass|lookup|pipe|fetch|error|purge|deliver)(\s*\))/mg, '$1<span class="vcl-constant">$2</span>$3');
+        vcl = vcl.replace(/(\b)([0-9]+(s|m|h|d|w|y)?)(\b)/mg, '$1<span class="vcl-constant">$2</span>$4');
+
+        // Builtin function detection
+        vcl = vcl.replace(/(^|\s|\b)(regsub|regsuball|hash_data)(\s*\()/mg, '$1<span class="vcl-builtin">$2</span>$3');
+
+        // Variable detection
+        vcl = vcl.replace(/(\s)(\.[a-z0-9]+)(\s|=)/mg, '$1<span class="vcl-variable">$2</span>$3');
+        vcl = vcl.replace(/(\b)((req|bereq|client|resp)\.[A-Za-z0-9\.\-_]+)/mg, '$1<span class="vcl-variable">$2</span>');
+
+        // Man page detection
+        vcl = vcl.replace(/vcl\(<span class="vcl-constant">([0-9])<\/span>\)/i, '<a href="http://linux.die.net/man/$1/vcl" class="vcl-man">vcl($1)</a>');
+
+        // Add line numbers
+        vcl = vcl.replace(/(.*)\n/g, function(match, match2) {
+            lineno++;
+
+            var rep = Array(padding + 1 - lineno.toString().length).join(' ') + lineno;
+
+            return '<span class="vcl-line-no">' + rep + '</span><span class="vcl-line">' + match2 + '</span>\n';
+        });
+
+        return vcl;
+    }
+
     function viewVcl(vcl) {
         var active = vcl === active_vcl;
         current_vcl = vcl;
@@ -161,7 +205,7 @@
         app.get(app.getCurrentServer(), '/vcl/' + vcl, function(response) {
             raw_vcl = response;
 
-            $('#vcl-file').html(html_vcl = app.highlightVcl(response));
+            $('#vcl-file').html(html_vcl = highlightVcl(response));
 
         }, 'text');
     }

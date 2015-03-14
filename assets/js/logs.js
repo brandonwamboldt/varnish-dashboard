@@ -1,7 +1,7 @@
 (function(app) {
     var varnish_api_version, refresh_interval, enabled = true;
 
-    $(document).ready(function() {
+    app.ready(function() {
         if ($('#logapi-limit').val() === '') {
             $('#logapi-limit').val(app.getConfig('default_log_fetch'));
         }
@@ -142,6 +142,11 @@
             $('#server-logs tbody').html('');
 
             for (var i in responses) {
+                if (typeof responses[i] === 'string' && responses[i].match(/Error in opening shmlog/)) {
+                    app.fatalError(responses[i]);
+                    return false;
+                }
+
                 var logs = responses[i].log;
 
                 if (tag && regex) {

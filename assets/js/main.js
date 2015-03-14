@@ -41,6 +41,10 @@
     var isCombinedView = servers.length > 1;
     var currentServer = isCombinedView ? -1 : 0;
     var page = $('body').data('page');
+    var isReady = false;
+    var documentReady = false;
+    var statusReady = false;
+    var readyCallbacks = [];
 
     if (servers.length > 1) {
         if (window.location.search.match(/server=([0-9]+)/)) {
@@ -71,6 +75,8 @@
     }
 
     $(document).ready(function() {
+        $('abbr').tooltip();
+
         if (!hasConfig) {
             $('.page-body').html('<div class="alert alert-danger" role="alert">No config was found, please ensure you have a config.js file</div>');
             return;
@@ -85,6 +91,21 @@
         } else {
             $('#server-navigation').show();
         }
+
+        var html = '';
+        html += '<div class="modal fade" id="varnishd-error" tabindex="-1" role="dialog" aria-hidden="true">';
+        html += '  <div class="modal-dialog">';
+        html += '    <div class="modal-content">';
+        html += '      <div class="modal-header">';
+        html += '        <h4 class="modal-title">Error</h4>';
+        html += '      </div>';
+        html += '      <div class="modal-body">';
+        html += '        <p>Varnishd disconnected</p>';
+        html += '      </div>';
+        html += '    </div>';
+        html += '  </div>';
+        html += '</div>';
+        $('body').append(html);
 
         $('#server-navigation .switch-server').on('click', function(e) {
             e.preventDefault();
@@ -128,50 +149,25 @@
                 app.initParams();
             }
         }
+
+        documentReady = true;
+
+        if (statusReady) {
+            triggerReady();
+        }
     });
 
-    // TODO: Implement a proper parser instead of hacky regexes
-    app.highlightVcl = function(vcl) {
-        var lineno = 0;
-        var lines = vcl.match(/\n/g).length;
-        var padding = lines.toString().length;
+    app.fatalError = function(error) {
+        $('#varnishd-error').modal({backdrop: 'static'});
+        $('#varnishd-error .modal-body p').html(error);
+    }
 
-        // Escape HTML characters
-        vcl = $('<div/>').text(vcl).html();
-
-        // String detection
-        vcl = vcl.replace(/("|')(.*?)("|')/mg, '$1<span class="vcl-string">$2</span>$3');
-
-        // Detect comments
-        vcl = vcl.replace(/^([\t ]*(#|\/\/).*)/mg, '<span class="vcl-comment">$1</span>');
-
-        // Keyword detection
-        vcl = vcl.replace(/(\s|^)(acl|import|backend|sub|if|elsif|else|return|error|include|set|unset|remove|vcl)(\b)/mg, '$1<span class="vcl-keyword">$2</span>$3');
-
-        // Constant detection
-        vcl = vcl.replace(/(\(\s*)(pass|lookup|pipe|fetch|error|purge|deliver)(\s*\))/mg, '$1<span class="vcl-constant">$2</span>$3');
-        vcl = vcl.replace(/(\b)([0-9]+(s|m|h|d|w|y)?)(\b)/mg, '$1<span class="vcl-constant">$2</span>$4');
-
-        // Builtin function detection
-        vcl = vcl.replace(/(^|\s|\b)(regsub|regsuball|hash_data)(\s*\()/mg, '$1<span class="vcl-builtin">$2</span>$3');
-
-        // Variable detection
-        vcl = vcl.replace(/(\s)(\.[a-z0-9]+)(\s|=)/mg, '$1<span class="vcl-variable">$2</span>$3');
-        vcl = vcl.replace(/(\b)((req|bereq|client|resp)\.[A-Za-z0-9\.\-_]+)/mg, '$1<span class="vcl-variable">$2</span>');
-
-        // Man page detection
-        vcl = vcl.replace(/vcl\(<span class="vcl-constant">([0-9])<\/span>\)/i, '<a href="http://linux.die.net/man/$1/vcl" class="vcl-man">vcl($1)</a>');
-
-        // Add line numbers
-        vcl = vcl.replace(/(.*)\n/g, function(match, match2) {
-            lineno++;
-
-            var rep = Array(padding + 1 - lineno.toString().length).join(' ') + lineno;
-
-            return '<span class="vcl-line-no">' + rep + '</span><span class="vcl-line">' + match2 + '</span>\n';
-        });
-
-        return vcl;
+    app.ready = function(callback) {
+        if (isReady) {
+            callback();
+        } else {
+            readyCallbacks.push(callback);
+        }
     }
 
     app.isCombinedView = function() {
@@ -603,6 +599,7 @@
         if (version == 3) {
             if (typeof stats[stat] === 'undefined') {
                 console.log('app.getStat(): "' + stat + '" is undefined');
+                return 0;
             }
 
             return stats[stat].value;
@@ -626,5 +623,55 @@
         }
     };
 
-    $('abbr').tooltip()
+    function triggerReady() {
+        var varnishd_online = true;
+
+        if (isCombinedView) {
+
+        } else if (app.getCurrentServer().status === 'offline') {
+            varnishd_online = false;
+        }
+
+        if (varnishd_online) {
+            isReady = true;
+
+            for (var i = 0; i < readyCallbacks.length; i++) {
+                readyCallbacks[i]();
+            }
+
+            readyCallbacks = [];
+        } else {
+            app.fatalError('Varnishd disconnected');
+        }
+    }
+
+    var statusCount = app.getEnabledServers().length;
+
+    app.getEnabledServers().forEach(function(server, index) {
+        if (server.host === null) {
+            server.host = document.location.hostname;
+        }
+
+        app.get(server, '/status', function(response) {
+            server.status_text = response;
+
+            if (response === 'Child in state running') {
+                server.status = 'online';
+            } else if (response === 'Varnishd disconnected') {
+                server.status = 'offline';
+            } else {
+                server.status = 'busy';
+            }
+
+            statusCount--;
+
+            if (statusCount === 0) {
+                statusReady = true;
+
+                if (documentReady) {
+                    triggerReady();
+                }
+            }
+        }, 'text');
+    });
 })(window.app = {});

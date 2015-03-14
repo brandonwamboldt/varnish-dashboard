@@ -1,5 +1,7 @@
 (function(app) {
-    $(document).ready(function() {
+    app.ready(function() {
+        $('#last-panic').html('');
+
         $('.action-ping').on('click', function(e) {
             e.preventDefault();
 
@@ -126,7 +128,7 @@
 
                     $('#varnish-version').append(app.getServer(i).name + ': Varnish ' + version[1] + ' revision <a href="https://github.com/varnish/Varnish-Cache/commit/' + version[2] + '">' + version[2] + '</a><br>');
                 }
-            } else {
+            } else if (varnish_version) {
                 $('#varnish-version').html('Varnish ' + version[1] + ' revision <a href="https://github.com/varnish/Varnish-Cache/commit/' + version[2] + '">' + version[2] + '</a><br>');
             }
         });

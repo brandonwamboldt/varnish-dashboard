@@ -74,13 +74,16 @@
               <div class="panel panel-default">
                 <div class="panel-heading"><i class="glyphicon glyphicon-info-sign"></i> Server Info</div>
                 <div class="panel-body">
-                  <div id="varnish-version"></div>
+                  <div id="varnish-version">Loading....</div>
                 </div>
               </div>
             </div>
 
             <div class="col-md-8" id="last-panic">
-              <!-- Populated via /assets/js/manage.js -->
+              <div class="panel panel-default">
+                <div class="panel-heading"><i class="glyphicon glyphicon-alert"></i> Panic Log</div>
+                <div class="panel-body">Loading...</div>
+              </div>
             </div>
         </div>
     </div>
@@ -129,6 +132,7 @@
     <script src="./config.js"></script>
     <script src="./vendor/jquery-1.11.2.min.js"></script>
     <script src="./vendor/bootstrap-3.3.2-dist/js/bootstrap.min.js"></script>
+    <script src="./assets/js/varnish.js"></script>
     <script src="./assets/js/main.js"></script>
     <script src="./assets/js/manage.js"></script>
 </body>

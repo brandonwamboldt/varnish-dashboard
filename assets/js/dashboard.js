@@ -1,7 +1,7 @@
 (function(app) {
-    var requestPlot, bandwidthPlot, requestData = [], bandwidthData = [];
+    var requestPlot, bandwidthPlot, requestData = [], bandwidthData = [], statusInterval, healthInterval, statsInterval;
 
-    $(document).ready(function() {
+    app.ready(function() {
         if (app.getEnabledServers().length <= 1) {
             var legendOptions = { show: false };
         } else {
@@ -121,7 +121,7 @@
 
             $('#dashboard-server-info').append(html);
 
-            setTimeout(getBackendHealth, app.getConfig('update_freq'));
+            healthInterval = setTimeout(getBackendHealth, app.getConfig('update_freq'));
         }, 'text')
     };
 
@@ -144,7 +144,7 @@
             renderDashboardServerPanel(index);
         }, 'text');
 
-        setTimeout(function() { getServerStatus(index) }, app.getConfig('update_freq'));
+        statusInterval = setTimeout(function() { getServerStatus(index) }, app.getConfig('update_freq'));
     };
 
     getServerStats = function() {
@@ -155,6 +155,11 @@
 
             (function(server, index) {
                 app.get(server, '/stats', function(response) {
+                    if (response === 'Couldn\'t open shmlog') {
+                        app.fatalError('Couldn\'t open shmlog');
+                        return false;
+                    }
+
                     ajaxCount--;
                     server.last_stats = server.current_stats;
                     server.current_stats = response;
@@ -183,7 +188,7 @@
                     }
 
                     if (ajaxCount === 0) {
-                        setTimeout(function() { getServerStats() }, app.getConfig('update_freq'));
+                        statsInterval = setTimeout(function() { getServerStats() }, app.getConfig('update_freq'));
                     }
                 }, 'json');
             })(app.getServer(idx), idx);

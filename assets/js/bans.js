@@ -1,5 +1,5 @@
 (function(app) {
-    $(document).ready(function() {
+    app.ready(function() {
         $('#server-ban').on('submit', function(e) {
             e.preventDefault();
 
