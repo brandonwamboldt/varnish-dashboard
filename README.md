@@ -91,6 +91,7 @@ var config = {
 		user: false,
 		pass: false
 	}],
+	groups: [],
 	update_freq: 2000,
 	max_points: 100,
     default_log_fetch: 100000,
@@ -130,6 +131,18 @@ The varnish agent username. If you are using the same host for the dashboard and
 **pass:**
 
 The varnish agent password. If you are using the same host for the dashboard and the varnish agent (e.g. running the agent with the `-H` flag) this is not required and can be left as `false`. Otherwise it IS required.
+
+### groups
+
+Groups is an array of objects to configure groups of Varnish Agent backends. Grouped backends are operated on as a group (stats are aggregated, operations apply to each server in the group, logs are combined, etc).
+
+**name:**
+
+Used purely for display purposes, name it whatever you want.
+
+**servers:**
+
+An array of servers that are part of this group. Each item should be the server **name**. It must exactly match the name as defined in `servers`.
 
 ### update_freq
 

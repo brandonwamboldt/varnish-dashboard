@@ -1,16 +1,49 @@
 (function(app) {
+    'use strict';
+
     app.ready(function() {
+        if (app.isGroupView()) {
+            $('.page-body').prepend('<div class="alert alert-warning" role="alert">NOTE: You are in the server group view, actions will be executed on all servers in the current group</div>');
+        }
+
         $('#last-panic').html('');
 
+        app.getEnabledServers().forEach(function(server) {
+            var html = '<div class="panel panel-default">';
+            html += '<div class="panel-heading">';
+
+            if (app.isGroupView()) {
+                html += '<i class="glyphicon glyphicon-alert"></i> Panic Log (' + server.name + ')';
+            } else {
+                html += '<i class="glyphicon glyphicon-alert"></i> Panic Log';
+            }
+
+            html += '<a href="#" data-server="' + server.index + '" class="pull-right induce-panic btn btn-xs btn-danger" style="margin-left:6px;"><i class="glyphicon glyphicon-exclamation-sign"></i> Induce Panic</a>';
+            html += '<a href="#" data-server="' + server.index + '" class="pull-right clear-panic btn btn-xs btn-success" style="display:none"><i class="glyphicon glyphicon-ban-circle"></i> Clear Panic</a> ';
+            html += '</div>';
+            html += '<div class="panel-body">';
+            html += '<pre id="panic-log-' + server.index + '">Loading...</pre>';
+            html += '</div>';
+            html += '</div>';
+
+            $('#last-panic').append(html);
+        });
+
+        bindEventListeners();
+        getServerPanicLogs();
+        getServerVersions();
+    });
+
+    function bindEventListeners() {
         $('.action-ping').on('click', function(e) {
             e.preventDefault();
 
             app.multiGet(app.getEnabledServers(), '/ping', function(responses) {
                 var msg = '';
 
-                for (var idx in responses) {
-                    msg += app.getServer(idx).name + ': ' + responses[idx] + "\n";
-                }
+                responses.forEach(function(r) {
+                    msg += app.getServer(r.server).name + ': ' + r.response + "\n";
+                });
 
                 alert(msg);
             }, 'text');
@@ -22,7 +55,7 @@
             if (confirm('Are you sure you want to restart Varnish?')) {
                 app.multiPost(app.getEnabledServers(), '/stop', function(responses) {
                     app.multiPost(app.getEnabledServers(), '/start', function(responses) {
-                        app.getBanList();
+                        getServerPanicLogs();
                         alert('Varnish has been restarted');
                     }, 'text');
                 }, 'text');
@@ -35,39 +68,18 @@
             app.multiPost(app.getEnabledServers(), '/direct', $('#server-direct input').val(), function(responses) {
                 var output = '';
 
-                for (var i = 0; i < responses.length; i++) {
+                responses.forEach(function(r) {
                     if (responses.length === 1) {
-                        output += '<pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
+                        output += '<pre>' + $('<div/>').text(r.response).html() + '</pre>';
                     } else {
-                        output += app.getServer(i).name + ':<br><br><pre>' + $('<div/>').text(responses[i]).html() + '</pre>';
+                        output += app.getServer(r.server).name + ':<br><br><pre>' + $('<div/>').text(r.response).html() + '</pre>';
                     }
-                }
+                });
 
                 $('#cmd-output .modal-body').html(output);
                 $('#cmd-output').modal('show');
             }, 'text');
         });
-
-        for (var server in app.getEnabledServers()) {
-            var html = '<div class="panel panel-default">';
-            html += '<div class="panel-heading">';
-
-            if (app.isCombinedView()) {
-                html += '<i class="glyphicon glyphicon-alert"></i> Panic Log (' + app.getServer(server).name + ')';
-            } else {
-                html += '<i class="glyphicon glyphicon-alert"></i> Panic Log';
-            }
-
-            html += '<a href="#" data-server="' + server + '" class="pull-right induce-panic btn btn-xs btn-danger" style="margin-left:6px;"><i class="glyphicon glyphicon-exclamation-sign"></i> Induce Panic</a>';
-            html += '<a href="#" data-server="' + server + '" class="pull-right clear-panic btn btn-xs btn-success" style="display:none"><i class="glyphicon glyphicon-ban-circle"></i> Clear Panic</a> ';
-            html += '</div>';
-            html += '<div class="panel-body">';
-            html += '<pre id="panic-log-' + server + '">Loading...</pre>';
-            html += '</div>';
-            html += '</div>';
-
-            $('#last-panic').append(html);
-        }
 
         $('.clear-panic').on('click', function(e) {
             e.preventDefault();
@@ -88,22 +100,19 @@
                 getServerPanicLogs();
             });
         });
-
-        getServerPanicLogs();
-        getServerVersions();
-    });
+    }
 
     function getServerPanicLogs() {
         app.multiGet(app.getEnabledServers(), '/panic', function(responses) {
-            for (var i in responses) {
-                $('#panic-log-' + i).text(responses[i]);
+            responses.forEach(function(r) {
+                $('#panic-log-' + r.server).text(r.response);
 
-                if (responses[i] === "Child has not panicked or panic has been cleared") {
-                    $('.clear-panic[data-server="' + i + '"]').hide();
+                if (r.response === "Child has not panicked or panic has been cleared") {
+                    $('.clear-panic[data-server="' + r.server + '"]').hide();
                 } else {
-                    $('.clear-panic[data-server="' + i + '"]').show();
+                    $('.clear-panic[data-server="' + r.server + '"]').show();
                 }
-            }
+            });
         });
     }
 
@@ -111,23 +120,22 @@
         app.multiPost(app.getEnabledServers(), '/direct', 'banner', function(responses) {
             var varnish_version = false, multiple_versions = false, version;
 
-            for (var i in responses) {
-                version = responses[i].match(/varnish-(.*?) revision ([a-z0-9]+)/i);
+            responses.forEach(function(r) {
+                version = r.response.match(/varnish-(.*?) revision ([a-z0-9]+)/i);
 
                 if (!varnish_version) {
                     varnish_version = version;
                 } else if (varnish_version[2] != version[2]) {
                     multiple_versions = true;
-                    break;
                 }
-            }
+            });
 
             if (multiple_versions) {
-                for (var i in responses) {
-                    version = responses[i].match(/varnish-(.*?) revision ([a-z0-9]+)/i);
+                responses.forEach(function(r) {
+                    version = r.response.match(/varnish-(.*?) revision ([a-z0-9]+)/i);
 
-                    $('#varnish-version').append(app.getServer(i).name + ': Varnish ' + version[1] + ' revision <a href="https://github.com/varnish/Varnish-Cache/commit/' + version[2] + '">' + version[2] + '</a><br>');
-                }
+                    $('#varnish-version').append(app.getServer(r.server).name + ': Varnish ' + version[1] + ' revision <a href="https://github.com/varnish/Varnish-Cache/commit/' + version[2] + '">' + version[2] + '</a><br>');
+                });
             } else if (varnish_version) {
                 $('#varnish-version').html('Varnish ' + version[1] + ' revision <a href="https://github.com/varnish/Varnish-Cache/commit/' + version[2] + '">' + version[2] + '</a><br>');
             }

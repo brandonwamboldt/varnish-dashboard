@@ -63,19 +63,18 @@
         app.multiPost(app.getEnabledServers(), '/direct', 'banner', function(responses) {
             var varnish_version = false, multiple_versions = false, version;
 
-            for (var i in responses) {
-                version = responses[i].match(/varnish-([0-9]+\.[0-9]+)/i);
+            responses.forEach(function(r) {
+                version = r.response.match(/varnish-([0-9]+\.[0-9]+)/i);
 
                 if (!varnish_version) {
                     varnish_version = version;
                 } else if (varnish_version[1] != version[1]) {
                     multiple_versions = true;
-                    break;
                 }
-            }
+            });
 
             if (multiple_versions) {
-                $('#server-logs').html('<div class="alert alert-danger">Cannot display logs in combined view due to different major versions (e.g. 3.0 and 4.0). Please select a single server.</div>');
+                $('#server-logs').html('<div class="alert alert-danger">Cannot display logs in server group view due to different major versions (e.g. 3.0 and 4.0). Please select a single server.</div>');
                 enabled = false;
             } else {
                 varnish_api_version = varnish_version[1];
@@ -141,13 +140,13 @@
         app.multiGet(app.getEnabledServers(), url, function(responses) {
             $('#server-logs tbody').html('');
 
-            for (var i in responses) {
-                if (typeof responses[i] === 'string' && responses[i].match(/Error in opening shmlog/)) {
-                    app.fatalError(responses[i]);
+            responses.forEach(function(r) {
+                if (typeof r.response === 'string' && r.response.match(/Error in opening shmlog/)) {
+                    app.fatalError(r.response);
                     return false;
                 }
 
-                var logs = responses[i].log;
+                var logs = r.response.log;
 
                 if (tag && regex) {
                     $('#server-logs .panel-heading span').html('Logs (<code>varnishlog -k ' + limit + ' -i ' + tag + ' -I ' + regex + '</code>)');
@@ -166,7 +165,7 @@
                         $('#server-logs tbody').append('<tr><td>' + logs[j].vxid + '</td><td>' + logs[j].tag + '</td><td>' + logs[j].type + '</td><td>' + logs[j].reason + '</td><td>' + logs[j].value + '</td></tr>');
                     }
                 }
-            }
+            });
 
             if ($('#server-logs tbody tr').length === 0) {
                 if (varnish_api_version === '3.0') {

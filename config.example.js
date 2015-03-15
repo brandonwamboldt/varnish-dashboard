@@ -6,6 +6,7 @@ var config = {
 		user: "varnish_agent_user",
 		pass: "varnish_agent_pass"
 	}],
+	groups: [],
 	update_freq: 2000,
 	max_points: 100,
     default_log_fetch: 100000,

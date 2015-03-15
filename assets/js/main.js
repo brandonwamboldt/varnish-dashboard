@@ -1,5 +1,6 @@
 (function(app) {
     var default_config = {
+        groups: [],
         update_freq: 2000,
         max_points: 100,
         default_log_fetch: 100000,
@@ -36,10 +37,12 @@
         }
     }
 
+    var groups = config.groups;
     var servers = config.servers;
     var hasConfig = typeof config !== 'undefined';
-    var isCombinedView = servers.length > 1;
-    var currentServer = isCombinedView ? -1 : 0;
+    var isGroupView = servers.length > 1;
+    var currentServer = isGroupView ? -1 : 0;
+    var currentGroup = -1;
     var page = $('body').data('page');
     var isReady = false;
     var documentReady = false;
@@ -49,8 +52,14 @@
     if (servers.length > 1) {
         if (window.location.search.match(/server=([0-9]+)/)) {
             currentServer = window.location.search.match(/server=([0-9]+)/)[1];
-            isCombinedView = false;
+            isGroupView = false;
             $('#server-navigation button').html(servers[currentServer].name + ' <span class="caret"></span>');
+        }
+
+        if (window.location.search.match(/group=([0-9]+)/)) {
+            currentGroup = window.location.search.match(/group=([0-9]+)/)[1];
+            isGroupView = true;
+            $('#server-navigation button').html(groups[currentGroup].name + ' <span class="caret"></span>');
         }
 
         if (currentServer !== -1) {
@@ -58,10 +67,17 @@
                 $(this).attr('href', $(this).attr('href') + '?server=' + currentServer);
             });
         }
+
+        if (currentGroup !== -1) {
+            $('.navbar-nav a').each(function () {
+                $(this).attr('href', $(this).attr('href') + '?group=' + currentGroup);
+            });
+        }
     }
 
     // Add state vars to servers
     for (var k = 0; k < servers.length; k++) {
+        servers[k].index = k;
         servers[k].status = 'offline';
         servers[k].status_text = '';
         servers[k].last_stats = false;
@@ -74,16 +90,26 @@
         $('#server-navigation ul').append('<li role="presentation"><a role="menuitem" class="switch-server" data-server="' + k + '" href="?server=' + k + '">' + servers[k].name + '</a></li>');
     }
 
+    // Add groups to navigation
+    for (var i = groups.length - 1; i >= 0; i--) {
+        for (var j = 0; j < groups[i].servers.length; j++) {
+            for (var k = 0; k < servers.length; k++) {
+                if (servers[k].name === groups[i].servers[j]) {
+                    groups[i].servers[j] = k;
+                    break;
+                }
+            }
+        }
+
+        $('#sg-all-servers').after('<li role="presentation"><a role="menuitem" class="switch-server" data-group="' + i + '" href="?group=' + i + '">' + groups[i].name + '</a></li>');
+    }
+
     $(document).ready(function() {
         $('abbr').tooltip();
 
         if (!hasConfig) {
             $('.page-body').html('<div class="alert alert-danger" role="alert">No config was found, please ensure you have a config.js file</div>');
             return;
-        }
-
-        if (isCombinedView) {
-            $('.page-body').prepend('<div class="alert alert-info" role="alert">NOTE: You are in the combined server view, all stats shown are the sum of stats from each server</div>');
         }
 
         if (servers.length === 1) {
@@ -109,7 +135,14 @@
 
         $('#server-navigation .switch-server').on('click', function(e) {
             e.preventDefault();
-            app.switchServerView($(this).data('server'));
+
+            if (typeof $(this).data('server') !== 'undefined') {
+                app.switchServerView($(this).data('server'));
+            } else if (typeof $(this).data('group') !== 'undefined') {
+                app.switchGroupView($(this).data('group'));
+            } else {
+                app.switchServerView('');
+            }
         });
 
         if (!config.show_bans_page) {
@@ -141,10 +174,14 @@
         }
 
         if (page === 'stats') {
+            if (app.isGroupView()) {
+                $('.page-body').prepend('<div class="alert alert-info" role="alert">NOTE: You are in the server group view, stats are aggregated from each server in the group</div>');
+            }
+
             app.initStats();
         } else if (page === 'params') {
-            if (isCombinedView) {
-                $('.page-body').html('<div class="alert alert-danger" role="alert">This page does not work in combined view mode, please select a specific server to view</div>');
+            if (isGroupView) {
+                $('.page-body').html('<div class="alert alert-danger" role="alert">This page does not work in server group mode, please select a single server to continue</div>');
             } else {
                 app.initParams();
             }
@@ -170,8 +207,8 @@
         }
     }
 
-    app.isCombinedView = function() {
-        return isCombinedView;
+    app.isGroupView = function() {
+        return isGroupView;
     }
 
     app.initStats = function() {
@@ -228,7 +265,15 @@
     }
 
     app.getEnabledServers = function() {
-        if (currentServer < 0) {
+        if (currentGroup >= 0) {
+            var enabled = [];
+
+            app.getCurrentGroup().servers.forEach(function(server, index) {
+                enabled.push(app.getServer(server));
+            });
+
+            return enabled;
+        } else if (currentServer < 0) {
             return servers;
         } else {
             return [servers[currentServer]];
@@ -251,6 +296,10 @@
         return servers[currentServer];
     };
 
+    app.getCurrentGroup = function() {
+        return groups[currentGroup];
+    };
+
     app.getConfig = function(param) {
         return config[param];
     };
@@ -258,7 +307,8 @@
     app.switchServerView = function(server) {
         var href, newhref;
 
-        href = window.location.href;
+        href   = window.location.href;
+        href   = href.replace(/[&\?]?group=[^&#]/g, '');
         search = window.location.search;
 
         if (href.indexOf('#') >= 0) {
@@ -266,8 +316,9 @@
         }
 
         if (server === '') {
-            if (search.indexOf('server=') >= 0) {
+            if (search.indexOf('server=') >= 0 || search.indexOf('group=') >= 0) {
                 newhref = href.replace(/&?server=[0-9]+/, '');
+                newhref = href.replace(/&?group=[0-9]+/, '');
                 newhref = newhref.replace(/\?$/, '');
             }
         } else {
@@ -277,6 +328,37 @@
                 newhref = href.replace(/server=[0-9]+/, 'server=' + server);
             } else {
                 newhref = href + '&server=' + server;
+            }
+        }
+
+        if (newhref) {
+            window.location = newhref;
+        }
+    }
+
+    app.switchGroupView = function(group) {
+        var href, newhref;
+
+        href   = window.location.href;
+        href   = href.replace(/[&\?]server=[^&#]/g, '');
+        search = window.location.search;
+
+        if (href.indexOf('#') >= 0) {
+            href = href.replace(/#.*/, '');
+        }
+
+        if (group === '') {
+            if (search.indexOf('group=') >= 0) {
+                newhref = href.replace(/&?group=[0-9]+/, '');
+                newhref = newhref.replace(/\?$/, '');
+            }
+        } else {
+            if (href.indexOf('?') === -1) {
+                newhref = href + '?group=' + group;
+            } else if (search.indexOf('group=') >= 0) {
+                newhref = href.replace(/group=[0-9]+/, 'group=' + group);
+            } else {
+                newhref = href + '&group=' + group;
             }
         }
 
@@ -393,26 +475,24 @@
         var ajaxCount = 0;
         var responses = [];
 
-        for (var idx in servers) {
+        servers.forEach(function(server) {
             ajaxCount++;
 
-            (function(idx) {
-                app.ajax(servers[idx], {
-                    url: url,
-                    data: data,
-                    success: function(response) {
-                        ajaxCount--;
+            app.ajax(server, {
+                url: url,
+                data: data,
+                success: function(response) {
+                    ajaxCount--;
 
-                        responses[idx] = response;
+                    responses.push({server: server.index, response: response});
 
-                        if (ajaxCount === 0) {
-                            success(responses);
-                        }
-                    },
-                    dataType: dataType
-                });
-            })(idx);
-        }
+                    if (ajaxCount === 0) {
+                        success(responses);
+                    }
+                },
+                dataType: dataType
+            });
+        });
     }
 
     app.multiPost = function(servers, url, data, success, dataType) {
@@ -429,27 +509,25 @@
         var ajaxCount = 0;
         var responses = [];
 
-        for (var idx in servers) {
+        servers.forEach(function(server) {
             ajaxCount++;
 
-            (function(idx) {
-                app.ajax(servers[idx], {
-                    type: 'POST',
-                    url: url,
-                    data: data,
-                    success: function(response) {
-                        ajaxCount--;
+            app.ajax(server, {
+                type: 'POST',
+                url: url,
+                data: data,
+                success: function(response) {
+                    ajaxCount--;
 
-                        responses[idx] = response;
+                    responses.push({server: server.index, response: response});
 
-                        if (ajaxCount === 0) {
-                            success(responses);
-                        }
-                    },
-                    dataType: dataType
-                });
-            })(idx);
-        }
+                    if (ajaxCount === 0) {
+                        success(responses);
+                    }
+                },
+                dataType: dataType
+            });
+        });
     }
 
     app.updateServerStats = function() {
@@ -497,7 +575,7 @@
         }
 
         if (diff_version) {
-            $('#server-stats').replaceWith('<div class="alert alert-danger">Cannot display stats in combined view due to different major versions (e.g. 3.0 and 4.0). Please select a single server.</div>');
+            $('#server-stats').replaceWith('<div class="alert alert-danger">Cannot display stats in server group mode due to different major versions (e.g. 3.0 and 4.0). Please select a single server to continue.</div>');
             return;
         }
 
@@ -626,7 +704,7 @@
     function triggerReady() {
         var varnishd_online = true;
 
-        if (isCombinedView) {
+        if (isGroupView) {
 
         } else if (app.getCurrentServer().status === 'offline') {
             varnishd_online = false;

@@ -1,9 +1,11 @@
 (function(app) {
+    'use strict';
+
     var current_vcl, active_vcl, raw_vcl, html_vcl;
 
     app.ready(function() {
-        if (app.isCombinedView()) {
-            $('.page-body').html('<div class="alert alert-danger" role="alert">This page does not work in combined view mode, please select a specific server to view</div>');
+        if (app.isGroupView()) {
+            $('.page-body').html('<div class="alert alert-danger" role="alert">This page does not work in server group mode, please select a single server to view</div>');
         } else {
             $('.discard-vcl').on('click', function(e) {
                 e.preventDefault();
@@ -143,6 +145,29 @@
         }, 'json');
     }
 
+    function viewVcl(vcl) {
+        var active = vcl === active_vcl;
+        current_vcl = vcl;
+        $('#current-vcl-name span').text(vcl + (active ? ' (active)' : ''));
+        $('a.view-vcl').removeClass('disabled');
+        $('#list-vcl-' + vcl + ' .view-vcl').addClass('disabled');
+
+        if (active) {
+            $('.deploy-vcl').addClass('disabled');
+            $('.discard-vcl').addClass('disabled');
+        } else {
+            $('.deploy-vcl').removeClass('disabled');
+            $('.discard-vcl').removeClass('disabled');
+        }
+
+        app.get(app.getCurrentServer(), '/vcl/' + vcl, function(response) {
+            raw_vcl = response;
+
+            $('#vcl-file').html(html_vcl = highlightVcl(response));
+
+        }, 'text');
+    }
+
     // TODO: Implement a proper parser instead of hacky regexes
     function highlightVcl(vcl) {
         var lineno = 0;
@@ -185,28 +210,5 @@
         });
 
         return vcl;
-    }
-
-    function viewVcl(vcl) {
-        var active = vcl === active_vcl;
-        current_vcl = vcl;
-        $('#current-vcl-name span').text(vcl + (active ? ' (active)' : ''));
-        $('a.view-vcl').removeClass('disabled');
-        $('#list-vcl-' + vcl + ' .view-vcl').addClass('disabled');
-
-        if (active) {
-            $('.deploy-vcl').addClass('disabled');
-            $('.discard-vcl').addClass('disabled');
-        } else {
-            $('.deploy-vcl').removeClass('disabled');
-            $('.discard-vcl').removeClass('disabled');
-        }
-
-        app.get(app.getCurrentServer(), '/vcl/' + vcl, function(response) {
-            raw_vcl = response;
-
-            $('#vcl-file').html(html_vcl = highlightVcl(response));
-
-        }, 'text');
     }
 })(window.app);

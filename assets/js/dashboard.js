@@ -1,7 +1,13 @@
 (function(app) {
+    'use strict';
+
     var requestPlot, bandwidthPlot, requestData = [], bandwidthData = [], statusInterval, healthInterval, statsInterval;
 
     app.ready(function() {
+        if (app.isGroupView()) {
+            $('.page-body').prepend('<div class="alert alert-info" role="alert">NOTE: You are in the server group view, all stats shown are the sum of stats from each server in the group</div>');
+        }
+
         if (app.getEnabledServers().length <= 1) {
             var legendOptions = { show: false };
         } else {
@@ -54,18 +60,18 @@
         getServerStats();
         getBackendHealth();
 
-        for (idx in app.getServers()) {
-            getServerStatus(idx);
-            renderDashboardServerPanel(idx);
-        }
+        app.getEnabledServers().forEach(function(server) {
+            getServerStatus(server);
+            renderDashboardServerPanel(server);
+        });
     });
 
-    getBackendHealth = function() {
+    function getBackendHealth() {
         app.multiPost(app.getEnabledServers(), '/direct', 'backend.list', function(responses) {
             var gbackends = {};
 
-            for (var i = 0; i < responses.length; i++) {
-                var backends = responses[i].split("\n");
+            responses.forEach(function(r) {
+                var backends = r.response.split("\n");
                 backends.shift();
 
                 for (var j = 0; j < backends.length; j++) {
@@ -80,7 +86,7 @@
                         probe: backend[3]
                     };
                 }
-            }
+            });
 
             $('#dashboard-server-info .server-backends').remove();
 
@@ -125,9 +131,7 @@
         }, 'text')
     };
 
-    getServerStatus = function(index) {
-        var server = app.getServer(index);
-
+    function getServerStatus(server) {
         if (server.host === null) {
             server.host = document.location.hostname;
         }
@@ -141,64 +145,61 @@
                 server.status = 'busy';
             }
 
-            renderDashboardServerPanel(index);
+            renderDashboardServerPanel(server);
         }, 'text');
 
-        statusInterval = setTimeout(function() { getServerStatus(index) }, app.getConfig('update_freq'));
-    };
+        statusInterval = setTimeout(function() { getServerStatus(server) }, app.getConfig('update_freq'));
+    }
 
-    getServerStats = function() {
+    function getServerStats() {
         var ajaxCount = 0;
 
-        for (idx in app.getEnabledServers()) {
+        app.getEnabledServers().forEach(function(server, index) {
             ajaxCount++;
 
-            (function(server, index) {
-                app.get(server, '/stats', function(response) {
-                    if (response === 'Couldn\'t open shmlog') {
-                        app.fatalError('Couldn\'t open shmlog');
-                        return false;
+            app.get(server, '/stats', function(response) {
+                if (response === 'Couldn\'t open shmlog') {
+                    app.fatalError('Couldn\'t open shmlog');
+                    return false;
+                }
+
+                ajaxCount--;
+                server.last_stats = server.current_stats;
+                server.current_stats = response;
+
+                if (requestData[index].length === 0) {
+                    var prestartTime = Date.parse(server.current_stats.timestamp) - (app.getConfig('max_points') * app.getConfig('update_freq'));
+
+                    for (var j = 0; j < app.getConfig('max_points'); j++) {
+                        requestData[index].push([prestartTime + (j * app.getConfig('update_freq')), 0]);
                     }
+                }
 
-                    ajaxCount--;
-                    server.last_stats = server.current_stats;
-                    server.current_stats = response;
+                if (bandwidthData[index].length === 0) {
+                    var prestartTime = Date.parse(server.current_stats.timestamp) - (app.getConfig('max_points') * app.getConfig('update_freq'));
 
-                    if (requestData[index].length === 0) {
-                        var prestartTime = Date.parse(server.current_stats.timestamp) - (app.getConfig('max_points') * app.getConfig('update_freq'));
-
-                        for (var j = 0; j < app.getConfig('max_points'); j++) {
-                            requestData[index].push([prestartTime + (j * app.getConfig('update_freq')), 0]);
-                        }
+                    for (var j = 0; j < app.getConfig('max_points'); j++) {
+                        bandwidthData[index].push([prestartTime + (j * app.getConfig('update_freq')), 0]);
                     }
+                }
 
-                    if (bandwidthData[index].length === 0) {
-                        var prestartTime = Date.parse(server.current_stats.timestamp) - (app.getConfig('max_points') * app.getConfig('update_freq'));
+                renderDashboardServerPanel(server);
 
-                        for (var j = 0; j < app.getConfig('max_points'); j++) {
-                            bandwidthData[index].push([prestartTime + (j * app.getConfig('update_freq')), 0]);
-                        }
-                    }
+                if (ajaxCount === 0) {
+                    updateDashboardGraphs();
+                    updateDashboardStats();
+                }
 
-                    renderDashboardServerPanel(index);
+                if (ajaxCount === 0) {
+                    statsInterval = setTimeout(function() { getServerStats() }, app.getConfig('update_freq'));
+                }
+            }, 'json');
+        });
+    }
 
-                    if (ajaxCount === 0) {
-                        updateDashboardGraphs();
-                        updateDashboardStats();
-                    }
-
-                    if (ajaxCount === 0) {
-                        statsInterval = setTimeout(function() { getServerStats() }, app.getConfig('update_freq'));
-                    }
-                }, 'json');
-            })(app.getServer(idx), idx);
-        }
-    };
-
-    renderDashboardServerPanel = function(index) {
-        var server = app.getServer(index);
-
-        html  = '<div class="panel panel-default server-' + index + '">';
+    function renderDashboardServerPanel(server) {
+        var html = '';
+        html  = '<div class="panel panel-default server-' + server.index + '">';
         html += '  <div class="panel-heading">';
         html += '      <img src="assets/images/status-' + server.status + '.png"> ' + server.name;
         html += '  </div>';
@@ -217,17 +218,16 @@
         html += '  </div>';
         html += '</div>';
 
-        if ($('#dashboard-server-info .server-' + index).length === 1) {
-            $('#dashboard-server-info .server-' + index).replaceWith(html);
+        if ($('#dashboard-server-info .server-' + server.index).length === 1) {
+            $('#dashboard-server-info .server-' + server.index).replaceWith(html);
         } else {
             $('#dashboard-server-info').append(html);
         }
 
         $('#dashboard-server-info abbr').tooltip()
-    };
+    }
 
-    getNiceStats = function(idx) {
-        var server        = app.getServer(idx);
+    function getNiceStats(server) {
         var current_stats = server.current_stats;
         var last_stats    = server.last_stats;
         var stats         = {};
@@ -346,49 +346,47 @@
         return stats;
     }
 
-    getRequestPlotData = function() {
-        var servers = app.getEnabledServers();
+    function getRequestPlotData() {
         var data = [];
 
-        for (var i = 0; i < servers.length; i++) {
+        app.getEnabledServers().forEach(function(server, i) {
             data[i] = {};
-            data[i].label = servers[i].name;
+            data[i].label = server.name;
 
-            if (servers[i].current_stats && servers[i].last_stats) {
-                var stats = getNiceStats(i);
+            if (server.current_stats && server.last_stats) {
+                var stats = getNiceStats(server);
 
                 requestData[i].shift();
                 requestData[i].push([stats.timestamp, stats.request_rate]);
             }
 
             data[i].data = requestData[i];
-        }
+        });
 
         return data;
     }
 
-    getBandwidthPlotData = function() {
-        var servers = app.getEnabledServers();
+    function getBandwidthPlotData() {
         var data = [];
 
-        for (var i = 0; i < servers.length; i++) {
+        app.getEnabledServers().forEach(function(server, i) {
             data[i] = {};
-            data[i].label = servers[i].name;
+            data[i].label = server.name;
 
-            if (servers[i].current_stats && servers[i].last_stats) {
-                var stats = getNiceStats(i);
+            if (server.current_stats && server.last_stats) {
+                var stats = getNiceStats(server);
 
                 bandwidthData[i].shift();
                 bandwidthData[i].push([stats.timestamp, stats.transfer_rate]);
             }
 
             data[i].data = bandwidthData[i];
-        }
+        });
 
         return data;
     }
 
-    updateDashboardGraphs = function() {
+    function updateDashboardGraphs() {
         requestPlot.setData(getRequestPlotData());
         requestPlot.setupGrid();
         requestPlot.draw();
@@ -398,23 +396,22 @@
         bandwidthPlot.draw();
     }
 
-    updateDashboardStats = function() {
-        var servers = app.getEnabledServers();
+    function updateDashboardStats() {
         var stats = false;
 
-        for (var i = 0; i < servers.length; i++) {
-            if (servers[i].current_stats && servers[i].last_stats) {
+        app.getEnabledServers().forEach(function(server) {
+            if (server.current_stats && server.last_stats) {
                 if (!stats) {
-                    stats = getNiceStats(i);
+                    stats = getNiceStats(server);
                 } else {
-                    var newstats = getNiceStats(i);
+                    var newstats = getNiceStats(server);
 
                     for (var j in stats) {
                         stats[j] = stats[j] + newstats[j];
                     }
                 }
             }
-        }
+        });
 
         if (stats) {
             $('.metric-connections.current').text(parseInt(stats.conn_rate) + '/sec');
@@ -441,8 +438,8 @@
             $('.metric-bereuse.current').text(parseInt(stats.backend_reuse) + '/sec');
             $('.metric-bereuse.average').text(parseInt(stats.avg_backend_reuse) + '/sec');
 
-            $('.metric-hitratio.current').text((stats.cache_hit_ratio / servers.length).toFixed(1) + '%');
-            $('.metric-hitratio.average').text((stats.avg_cache_hit_ratio / servers.length).toFixed(1) + '%');
+            $('.metric-hitratio.current').text((stats.cache_hit_ratio / app.getEnabledServers().length).toFixed(1) + '%');
+            $('.metric-hitratio.average').text((stats.avg_cache_hit_ratio / app.getEnabledServers().length).toFixed(1) + '%');
 
             $('.metric-cache_hit.current').text(stats.cache_hit.toFixed(0) + '/sec');
             $('.metric-cache_hit.average').text(stats.avg_cache_hit.toFixed(0) + '/sec');

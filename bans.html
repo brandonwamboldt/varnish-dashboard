@@ -40,12 +40,14 @@
                 <form class="navbar-form navbar-right" id="server-navigation" style="display:none">
                     <div class="dropdown clearfix">
                         <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-                          Combined Server View
+                          All Servers
                           <span class="caret"></span>
                         </button>
 
                         <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                            <li role="presentation"><a role="menuitem" class="switch-server" data-server="" href="./">Combined Server View</a></li>
+                            <li role="presentation" class="dropdown-header">Server Groups</li>
+                            <li role="presentation" id="sg-all-servers"><a role="menuitem" class="switch-server" data-server="" href="./">All Servers</a></li>
+                            <li role="presentation" id="sg-servers" class="dropdown-header">Servers</li>
                         </ul>
                     </div>
                 </form>
@@ -92,6 +94,7 @@
                           <tr>
                               <th style="width:160px;">Timestamp</th>
                               <th style="width:120px;">References</th>
+                              <th style="width:80px;">State</th>
                               <th>Ban</th>
                           </tr>
                       </thead>
