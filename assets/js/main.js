@@ -318,7 +318,7 @@
         if (server === '') {
             if (search.indexOf('server=') >= 0 || search.indexOf('group=') >= 0) {
                 newhref = href.replace(/&?server=[0-9]+/, '');
-                newhref = href.replace(/&?group=[0-9]+/, '');
+                newhref = newhref.replace(/&?group=[0-9]+/, '');
                 newhref = newhref.replace(/\?$/, '');
             }
         } else {
