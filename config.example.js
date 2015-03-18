@@ -9,7 +9,7 @@ var config = {
 	groups: [],
 	update_freq: 2000,
 	max_points: 100,
-    default_log_fetch: 100000,
+    default_log_fetch: 10000,
     default_log_display: 100,
 	show_bans_page: true,
 	show_manage_server_page: true,
