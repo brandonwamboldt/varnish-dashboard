@@ -479,8 +479,12 @@
             app.ajax(server, {
                 url: url,
                 data: data,
-                success: function(response) {
+                success: function(response, status, jqXHR) {
                     ajaxCount--;
+
+                    if (dataType === 'json' && typeof response === 'string') {
+                        response = JSON.parse(response.replace(/\\0/g, ''));
+                    }
 
                     responses.push({server: server.index, response: response});
 
