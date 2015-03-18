@@ -148,6 +148,11 @@
 
                 var logs = r.response.log;
 
+                if (!logs) {
+                    $('#server-logs .panel-body').html('<div class="alert alert-danger">Varnish Agent returned a bad response, unable to render logs (this is a known issue with no fix)</div>');
+                    return false;
+                }
+
                 if (tag && regex) {
                     $('#server-logs .panel-heading span').html('Logs (<code>varnishlog -k ' + limit + ' -i ' + tag + ' -I ' + regex + '</code>)');
                 } else if (tag) {
