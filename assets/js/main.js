@@ -485,7 +485,7 @@
                     ajaxCount--;
 
                     if (dataType === 'json' && typeof response === 'string') {
-                        response = JSON.parse(response);
+                        response = JSON.parse(response.replace(/\0/g, ''));
                     }
 
                     responses.push({server: server.index, response: response});
