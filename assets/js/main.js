@@ -17,18 +17,16 @@
     if (typeof window.config !== 'undefined') {
         var config = window.config;
     } else {
-        if (window.location.port === '6085') {
-            // Use the default config
-            var config = {
-                servers: [{
-                    name: "Varnish",
-                    host: null,
-                    port: 6085,
-                    user: false,
-                    pass: false
-                }]
-            };
-        }
+        // Use the default config
+        var config = {
+            servers: [{
+                name: "Varnish",
+                host: window.location.hostname,
+                port: window.location.port,
+                user: false,
+                pass: false
+            }]
+        };
     }
 
     for (var option in default_config) {
