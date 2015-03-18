@@ -174,6 +174,6 @@
                     $('#server-logs tbody').append('<tr><td colspan="5">No log entries found</td></tr>');
                 }
             }
-        });
+        }, 'json');
     }
 })(window.app);
