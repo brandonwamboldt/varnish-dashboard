@@ -113,7 +113,7 @@
                     $('.clear-panic[data-server="' + r.server + '"]').show();
                 }
             });
-        });
+        }, 'text');
     }
 
     function getServerVersions() {
