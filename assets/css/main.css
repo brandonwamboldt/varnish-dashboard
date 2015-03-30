@@ -107,7 +107,7 @@ table.varnish-logs {
   table-layout: fixed;
 }
 
-table.varnishlogs td {
+table.varnish-logs td {
   white-space: pre-wrap;
   word-break: break-all;
 }
