@@ -106,3 +106,8 @@ table.varnish-logs {
   max-width: 100%;
   table-layout: fixed;
 }
+
+table.varnishlogs td {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
