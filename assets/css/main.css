@@ -101,3 +101,8 @@ a, a:focus, a:active {
     display: inline;
     padding: 0px 2px;
 }
+
+table.varnish-logs {
+  max-width: 100%;
+  table-layout: fixed;
+}

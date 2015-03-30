@@ -81,7 +81,7 @@
                 var table_html = '';
 
                 if (varnish_api_version === '3.0') {
-                    table_html += '<table class="table table-bordered table-hover">';
+                    table_html += '<table class="varnish-logs table table-bordered table-hover">';
                     table_html += '<thead>';
                     table_html += '<tr>';
                     table_html += '<th style="width:60px;">FD</th>';
@@ -95,7 +95,7 @@
                     table_html += '</tbody>';
                     table_html += '</table>';
                 } else {
-                    table_html += '<table class="table table-bordered table-hover">';
+                    table_html += '<table class="varnish-logs table table-bordered table-hover">';
                     table_html += '<thead>';
                     table_html += '<tr>';
                     table_html += '<th style="width:60px;">VXID</th>';
