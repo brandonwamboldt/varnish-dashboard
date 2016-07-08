@@ -40,6 +40,12 @@ Setup
 
 The agent must be installed on the same server running Varnish. You can clone and compile the source code or install it using the following packages for Debian/Ubuntu and RHEL/CentOS: http://users.varnish-software.com/~kristian/agent/
 
+Alternatively, if you have installed Varnish via official yum repository on RHEL/CentOS, you can install varnish-agent directly via:
+
+```
+yum install --nogpgcheck varnish-agent
+```
+
 I recommend that you read the docs on the GitHub repo and this post: http://kly.no/posts/2013_01_22_Varnish_Agent.html
 
 You may have to create a file with username and password: /etc/varnish/agent_secret. Every line of this file is a user and a password with the following format:
