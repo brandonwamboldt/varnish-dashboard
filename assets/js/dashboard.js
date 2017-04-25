@@ -76,14 +76,14 @@
 
                 for (var j = 0; j < backends.length; j++) {
                     var backend = backends[j].split(/\s+/);
-                    var name = backend[0].match(/(.*?)\((.*?)\)/);
+                    var name = backend[0];
 
-                    gbackends[name[1]] = {
-                        name: name[1],
-                        config: name[2],
-                        refs: backend[1],
-                        admin: backend[2],
-                        probe: backend[3]
+                    gbackends[name] = {
+                        name: name,
+                        config: name,
+                        admin: backend[1],
+                        probe: backend[2],
+                        refs: backend[3]                    
                     };
                 }
             });
@@ -101,7 +101,8 @@
             html += '        <tr>';
             html += '          <th style="width:20px"><img src="assets/images/status-online.png" alt=""></th>';
             html += '          <th>Name</th>';
-            html += '          <th>Config</th>';
+            html += '          <th>Admin</th>';
+            html += '          <th>Probe</th>';
             html += '        </tr>';
             html += '      </thead>';
             html += '      <tbody>';
@@ -116,7 +117,8 @@
                 }
 
                 html += '<td>' + gbackends[idx].name + '</td>';
-                html += '<td>' + gbackends[idx].config + '</td>';
+                html += '<td>' + gbackends[idx].admin + '</td>';
+                html += '<td>' + gbackends[idx].refs + '</td>';
                 html += '</tr>';
             }
 

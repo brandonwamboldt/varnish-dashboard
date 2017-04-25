@@ -1,4 +1,4 @@
-(function(app) {
+(function (app) {
     var default_config = {
         groups: [],
         update_freq: 2000,
@@ -102,7 +102,7 @@
         $('#sg-all-servers').after('<li role="presentation"><a role="menuitem" class="switch-server" data-group="' + i + '" href="?group=' + i + '">' + groups[i].name + '</a></li>');
     }
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('abbr').tooltip();
 
         if (!hasConfig) {
@@ -131,7 +131,7 @@
         html += '</div>';
         $('body').append(html);
 
-        $('#server-navigation .switch-server').on('click', function(e) {
+        $('#server-navigation .switch-server').on('click', function (e) {
             e.preventDefault();
 
             if (typeof $(this).data('server') !== 'undefined') {
@@ -192,12 +192,12 @@
         }
     });
 
-    app.fatalError = function(error) {
-        $('#varnishd-error').modal({backdrop: 'static'});
+    app.fatalError = function (error) {
+        $('#varnishd-error').modal({ backdrop: 'static' });
         $('#varnishd-error .modal-body p').html(error);
     }
 
-    app.ready = function(callback) {
+    app.ready = function (callback) {
         if (isReady) {
             callback();
         } else {
@@ -205,18 +205,18 @@
         }
     }
 
-    app.isGroupView = function() {
+    app.isGroupView = function () {
         return isGroupView;
     }
 
-    app.initStats = function() {
+    app.initStats = function () {
         for (idx in servers) {
             app.getServerStats();
         }
     }
 
-    app.initParams = function() {
-        app.get(servers[currentServer], '/paramjson/', function(response) {
+    app.initParams = function () {
+        app.get(servers[currentServer], '/paramjson/', function (response) {
             var params = [];
 
             for (var param in response) {
@@ -262,11 +262,11 @@
         });
     }
 
-    app.getEnabledServers = function() {
+    app.getEnabledServers = function () {
         if (currentGroup >= 0) {
             var enabled = [];
 
-            app.getCurrentGroup().servers.forEach(function(server, index) {
+            app.getCurrentGroup().servers.forEach(function (server, index) {
                 enabled.push(app.getServer(server));
             });
 
@@ -278,7 +278,7 @@
         }
     };
 
-    app.getServers = function(server) {
+    app.getServers = function (server) {
         if (server === undefined) {
             return servers;
         } else {
@@ -286,27 +286,27 @@
         }
     };
 
-    app.getServer = function(server) {
+    app.getServer = function (server) {
         return servers[server];
     };
 
-    app.getCurrentServer = function() {
+    app.getCurrentServer = function () {
         return servers[currentServer];
     };
 
-    app.getCurrentGroup = function() {
+    app.getCurrentGroup = function () {
         return groups[currentGroup];
     };
 
-    app.getConfig = function(param) {
+    app.getConfig = function (param) {
         return config[param];
     };
 
-    app.switchServerView = function(server) {
+    app.switchServerView = function (server) {
         var href, newhref;
 
-        href   = window.location.href;
-        href   = href.replace(/[&\?]?group=[^&#]/g, '');
+        href = window.location.href;
+        href = href.replace(/[&\?]?group=[^&#]/g, '');
         search = window.location.search;
 
         if (href.indexOf('#') >= 0) {
@@ -334,11 +334,11 @@
         }
     }
 
-    app.switchGroupView = function(group) {
+    app.switchGroupView = function (group) {
         var href, newhref;
 
-        href   = window.location.href;
-        href   = href.replace(/[&\?]server=[^&#]/g, '');
+        href = window.location.href;
+        href = href.replace(/[&\?]server=[^&#]/g, '');
         search = window.location.search;
 
         if (href.indexOf('#') >= 0) {
@@ -365,10 +365,16 @@
         }
     }
 
-    app.ajax = function(server, options) {
-        options.url = '//' + server.host + ':' + server.port + options.url;
-        options.error = function(xhr, textStatus) { options.success(xhr.responseText, textStatus, xhr); };
-        options.beforeSend = function(xhr) {
+    app.ajax = function (server, options) {
+        if (server.host != null) {
+            if (server.port != null) {
+                options.url = '//' + server.host + ':' + server.port + options.url;
+            } else {
+                options.url = '//' + server.host + options.url;
+            }
+        }
+        options.error = function (xhr, textStatus) { options.success(xhr.responseText, textStatus, xhr); };
+        options.beforeSend = function (xhr) {
             if (server.user && server.pass) {
                 xhr.setRequestHeader("Authorization", "Basic " + btoa(server.user + ":" + server.pass));
             }
@@ -380,7 +386,7 @@
         $.ajax(options);
     }
 
-    app.get = function(server, url, data, success, dataType) {
+    app.get = function (server, url, data, success, dataType) {
         if (typeof data === 'function') {
             dataType = success;
             success = data;
@@ -399,7 +405,7 @@
         });
     }
 
-    app.post = function(server, url, data, success, dataType) {
+    app.post = function (server, url, data, success, dataType) {
         if (typeof data === 'function') {
             dataType = success;
             success = data;
@@ -419,7 +425,7 @@
         });
     }
 
-    app.put = function(server, url, data, success, dataType) {
+    app.put = function (server, url, data, success, dataType) {
         if (typeof data === 'function') {
             dataType = success;
             success = data;
@@ -439,7 +445,7 @@
         });
     }
 
-    app.delete = function(server, url, data, success, dataType) {
+    app.delete = function (server, url, data, success, dataType) {
         if (typeof data === 'function') {
             dataType = success;
             success = data;
@@ -459,7 +465,7 @@
         });
     }
 
-    app.multiGet = function(servers, url, data, success, dataType) {
+    app.multiGet = function (servers, url, data, success, dataType) {
         if (typeof data === 'function') {
             dataType = success;
             success = data;
@@ -473,20 +479,20 @@
         var ajaxCount = 0;
         var responses = [];
 
-        servers.forEach(function(server) {
+        servers.forEach(function (server) {
             ajaxCount++;
 
             app.ajax(server, {
                 url: url,
                 data: data,
-                success: function(response, status, jqXHR) {
+                success: function (response, status, jqXHR) {
                     ajaxCount--;
 
                     if (dataType === 'json' && typeof response === 'string') {
                         response = JSON.parse(response.replace(/\\0/g, ''));
                     }
 
-                    responses.push({server: server.index, response: response});
+                    responses.push({ server: server.index, response: response });
 
                     if (ajaxCount === 0) {
                         success(responses);
@@ -497,7 +503,7 @@
         });
     }
 
-    app.multiPost = function(servers, url, data, success, dataType) {
+    app.multiPost = function (servers, url, data, success, dataType) {
         if (typeof data === 'function') {
             dataType = success;
             success = data;
@@ -511,17 +517,17 @@
         var ajaxCount = 0;
         var responses = [];
 
-        servers.forEach(function(server) {
+        servers.forEach(function (server) {
             ajaxCount++;
 
             app.ajax(server, {
                 type: 'POST',
                 url: url,
                 data: data,
-                success: function(response) {
+                success: function (response) {
                     ajaxCount--;
 
-                    responses.push({server: server.index, response: response});
+                    responses.push({ server: server.index, response: response });
 
                     if (ajaxCount === 0) {
                         success(responses);
@@ -532,7 +538,7 @@
         });
     }
 
-    app.updateServerStats = function() {
+    app.updateServerStats = function () {
         var servers = app.getEnabledServers();
         var stats = [];
         var diff_version = false;
@@ -594,28 +600,28 @@
         }
     }
 
-    app.getServerStats = function() {
+    app.getServerStats = function () {
         var ajaxCount = 0;
 
         for (idx in servers) {
             ajaxCount++;
 
-            (function(server, index) {
-                app.get(server, '/stats', function(response) {
+            (function (server, index) {
+                app.get(server, '/stats', function (response) {
                     ajaxCount--;
                     server.last_stats = server.current_stats;
                     server.current_stats = response;
 
                     if (ajaxCount === 0) {
                         app.updateServerStats();
-                        setTimeout(function() { app.getServerStats() }, config.update_freq);
+                        setTimeout(function () { app.getServerStats() }, config.update_freq);
                     }
                 }, 'json');
             })(servers[idx], idx);
         }
     };
 
-    app.secondsToHumanTime = function(seconds) {
+    app.secondsToHumanTime = function (seconds) {
         var humanTime = '';
 
         if ((seconds / 86400) >= 1) {
@@ -657,7 +663,7 @@
         return humanTime.substring(2);
     }
 
-    app.bytesToNiceUnits = function(bytes) {
+    app.bytesToNiceUnits = function (bytes) {
         if ((bytes / 125000000000) >= 1) {
             return (bytes / 125000000000).toFixed(1) + ' Tbps';
         } else if ((bytes / 125000000) >= 1) {
@@ -669,7 +675,7 @@
         }
     }
 
-    app.getStat = function(stats, stat) {
+    app.getStat = function (stats, stat) {
         var version = 3;
 
         if (typeof stats["MAIN.uptime"] !== 'undefined') {
@@ -727,12 +733,12 @@
 
     var statusCount = app.getEnabledServers().length;
 
-    app.getEnabledServers().forEach(function(server, index) {
+    app.getEnabledServers().forEach(function (server, index) {
         if (server.host === null) {
             server.host = document.location.hostname;
         }
 
-        app.get(server, '/status', function(response) {
+        app.get(server, '/status', function (response) {
             server.status_text = response;
 
             if (response === 'Child in state running') {
