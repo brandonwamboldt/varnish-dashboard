@@ -144,27 +144,26 @@
         });
 
         if (!config.show_bans_page) {
-            $('.nav a[href="./bans.html"]').hide();
+            $('.nav li.ban').hide();
         }
 
         if (!config.show_manage_server_page) {
-            $('.nav a[href="./manage.html"]').hide();
+            $('.nav li.manage').hide();
         }
-
         if (!config.show_vcl_page) {
-            $('.nav a[href="./vcl.html"]').hide();
+            $('.nav li.vcl').hide();
         }
 
         if (!config.show_stats_page) {
-            $('.nav a[href="./stats.html"]').hide();
+            $('.nav li.stats').hide();
         }
 
         if (!config.show_params_page) {
-            $('.nav a[href="./params.html"]').hide();
+            $('.nav li.params').hide();
         }
 
         if (!config.show_logs_page) {
-            $('.nav a[href="./logs.html"]').hide();
+            $('.nav li.logs').hide();
         }
 
         if (!config.show_restart_varnish_btn) {
