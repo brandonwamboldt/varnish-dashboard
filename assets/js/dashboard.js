@@ -69,22 +69,42 @@
     function getBackendHealth() {
         app.multiPost(app.getEnabledServers(), '/direct', 'backend.list', function(responses) {
             var gbackends = {};
+            var version = 4;
 
             responses.forEach(function(r) {
                 var backends = r.response.split("\n");
+
+                // varnish 3 output is different than 4.X
+                if (backends[0].includes("Ref")) {
+                    version = 3;
+                }
+
                 backends.shift();
 
                 for (var j = 0; j < backends.length; j++) {
-                    var backend = backends[j].split(/\s+/);
-                    var name = backend[0].match(/(.*?)\((.*?)\)/);
+                    if (version == 3) {
+                        var backend = backends[j].split(/\s+/);
+                        var name = backend[0].match(/(.*?)\((.*?)\)/);
 
-                    gbackends[name[1]] = {
-                        name: name[1],
-                        config: name[2],
-                        refs: backend[1],
-                        admin: backend[2],
-                        probe: backend[3]
-                    };
+                        gbackends[name[1]] = {
+                            name: name[1],
+                            config: name[2],
+                            refs: backend[1],
+                            admin: backend[2],
+                            probe: backend[3]
+                        };
+                    } else {
+                        var backend = backends[j].split(/\s+/, 3);
+                        var name = backend[0].match(/([^\.]+)\.(.*)/);
+
+                        gbackends[name[2]] = {
+                            name: name[2],
+                            config: name[1],
+                            refs: null,
+                            admin: backend[1],
+                            probe: backend[2]
+                        };
+                    }
                 }
             });
 
