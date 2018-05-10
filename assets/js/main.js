@@ -365,7 +365,13 @@
     }
 
     app.ajax = function(server, options) {
-        options.url = '//' + server.host + ':' + server.port + options.url;
+        if (server.host != null) {
+          if (server.port != null) {
+            options.url = '//' + server.host + ':' + server.port + options.url;
+          } else {
+            options.url = '//' + server.host + options.url;
+          }
+        }
         options.error = function(xhr, textStatus) { options.success(xhr.responseText, textStatus, xhr); };
         options.beforeSend = function(xhr) {
             if (server.user && server.pass) {
